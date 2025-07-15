@@ -48,10 +48,10 @@ lsi: false
 username: kh4lifa0x
 repo: kh4lifa0x.github.io
 branch: master
-relative_source: ../jasper/
-destination: ../jasper-pages/
-production_url:  https://jekyllt.github.io/jasper/
-source_url:  https://github.com/jekyllt/jasper/
+relative_source: ../
+destination: ../
+production_url:  https://jekyllt.github.io/kh4lifa0x/
+source_url:  https://github.com/kh4lifa0x/kh4lifa0x.github.io
 
 exclude:
   - README.md
