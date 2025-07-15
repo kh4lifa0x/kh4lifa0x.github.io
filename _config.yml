@@ -1,6 +1,6 @@
 # Setup
 title: Ahmed Khalifa 
-description: My personal blog 
+description: Threat Researcher & DFIR Engineer interested in Adversary Hunting and malware Research 
 url: https://kh4lifa0x.github.io
 avatar: /avatar.jpeg
 paginate: 5
@@ -34,7 +34,7 @@ logo: logo.png
 social:
   name: Ahmed Khalifa
   links:
-    - https://twitter.com/kh4lifa0x
+    - https://x.com/svchostss_exe
     - https://github.com/kh4lifa0x
 google_site_verification: xxxxx
 lang: en
@@ -55,4 +55,4 @@ sass:
 author:
   name: Ahmed Khalifa
   url: https://github.com/kh4lifa0x/
-  email: vszhub@gmail.com
+  email: ahmedkhalifa8474hh@gmail.com
