@@ -1,8 +1,8 @@
 ---
 layout: post
-  title: How the attacker abuses WMI
+title: How the attacker abuses WMI
 tags: WMI
-math: False
+math: True
 date: 2025-05-02 15:32 +0800
 ---
 WMI Event Subscription (Persistence)
