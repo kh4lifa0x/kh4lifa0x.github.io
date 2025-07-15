@@ -3,8 +3,8 @@ layout: post
 title: Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery
 author: Songzi Vong
 tags:
-- jekyll theme
-- jekyll
+- ShadowCopy
+- vss
 date: 2025-06-01 13:56 +0800
 ---
 
