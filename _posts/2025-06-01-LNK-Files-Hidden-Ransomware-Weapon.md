@@ -1,10 +1,12 @@
 ---
-title: "https://darkatlas.io/blog/how-shortcut-files-lnk-used-to-deliver-ransomware"
+title: "How Shortcut Files (.LNK) used to Deliver Ransomware
+"
 classes: wide
 header:
   teaser: ""
 ribbon: Red
-description: "https://darkatlas.io/blog/how-shortcut-files-lnk-used-to-deliver-ransomware"
+description: "How Shortcut Files (.LNK) used to Deliver Ransomware
+"
 categories:
   - Malware Analysis
 toc: true
