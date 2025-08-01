@@ -1,337 +1,433 @@
 <!doctype html>
 <html lang="en">
 
-  <head>
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css" integrity="sha384-cg6SkqEOCV1NbJoCu11+bm0NvBRc8IYLRGXkmNrqUBfTjmMYwNKPWBTIKyw9mHNJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css"
+    integrity="sha384-cg6SkqEOCV1NbJoCu11+bm0NvBRc8IYLRGXkmNrqUBfTjmMYwNKPWBTIKyw9mHNJ" crossorigin="anonymous">
   <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/grids-responsive-min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/assets/styles.css"><!-- Begin Jekyll SEO tag v2.8.0 -->
-<title>Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery | Ahmed Khalifa</title>
-<meta name="generator" content="Jekyll v4.4.1" />
-<meta property="og:title" content="Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery" />
-<meta name="author" content="Songzi Vong" />
-<meta property="og:locale" content="en" />
-<meta name="description" content="Ransomware remains one of the most pressing cybersecurity threats facing organizations globally. Over the past several years, its adoption has surged — not only among sophisticated APT groups and commodity malware operators but also among opportunistic threat actors with no prior history of using ransomware. Initially, attackers leveraged ransomware to exploit gaps in incident response, such as the absence of reliable backups or robust disaster recovery plans. Their goal was often to pressure victims into paying to restore operations and minimize downtime. However, a harsh reality persists: even when ransoms are paid, full recovery is rarely achieved. Many victims are left with corrupted systems, incomplete data restoration, and lingering operational disruptions — highlighting the critical importance of proactive defense and resilience over reliance on payment. What’s a vssadmin ? Vssadmin is a Windows command-line utility used to manage Volume Shadow Copy Services (VSS), which are responsible for creating and maintaining backup snapshots — known as shadow copies — of volumes or files. Shadow copies allow users and system processes to restore previous versions of files, even if the originals are deleted or modified. Attackers and ransomware often target vssadmin to delete these shadow copies, effectively removing the victim’s ability to recover data without paying a ransom. Disabling or wiping shadow copies is a common anti-recovery tactic seen in modern ransomware campaigns. what is a shadow copy? A shadow copy (also known as a Volume Shadow Copy or VSS snapshot) is a snapshot of a file or volume at a specific point in time, created by the Windows Volume Shadow Copy Service (VSS). It allows the system — or users — to recover previous versions of files, even while those files are in use. Key Points: It’s used by backup software and Windows features like “Previous Versions” to restore files or system states. Shadow copies are read-only and stored locally on disk. They’re commonly used for system restore points, ensuring you can roll back to a stable configuration. Inhibiting System Recovery — MITRE ATT&amp;CK Technique T1490 Inhibit System Recovery Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery of a corrupted… attack.mitre.org Ransomware frequently employs a range of techniques to disrupt system recovery, prevent future restorations, and corrupt or delete existing recovery points. the most commonly observed tactic was the use of vssadmin to delete Volume Shadow Copies from the system. As this technique became widespread and easily detectable, ransomware developers began exploring alternative methods, leveraging built-in Windows utilities such as PowerShell, wmic, bcdedit, net.exe, and wbadmin. According to data provided by MITRE, more than 25 ransomware groups and malware families have been documented using techniques to delete or tamper with Volume Shadow Copies (VSS). This widespread abuse of the Windows Volume Shadow Copy Service underscores a critical tactic used to inhibit system recovery and force ransom payments. While early variants relied primarily on vssadmin.exe, modern strains now leverage a variety of native Windows utilities—including PowerShell, wmic, bcdedit, net.exe, and wbadmin—to ensure the destruction of backups. The prevalence of this behavior highlights how difficult it is to attribute ransomware based solely on recovery prevention methods. Shadow Copy and Recovery Inhibition via Built-in Tools Objective: Identify processes commonly used by ransomware or threat actors to delete shadow copies, disable recovery mechanisms, or otherwise inhibit system recovery. Detection Criteria: Process Name is any of the following: vssadmin.exe bcdedit.exe wmic.exe powershell.exe wbadmin.exe Command Line contains any of the following indicative keywords or parameters: recoveryenabled no IgnoreAllFailures delete shadows delete systemstatebackup resize shadowstorage _ShadowCopy safeboot minimal shadowcopy /nointeractive shadowcopy delete vssadmin.exe Delete Shadows /All /Quiet Explanation: **vssadmin.exe**: Native Windows utility for managing Volume Shadow Copies (VSS). **Delete Shadows**: Instructs Windows to delete shadow copies. **/All**: Deletes all shadow copies on the system. **/Quiet**: Suppresses confirmation prompts and output — executes silently. Known Ransomware Families Using It: Conti Ryuk LockBit Avaddon Ragnar Netwalker Nemty ProLock wmic shadowcopy delete Explanation: **wmic**: Windows Management Instrumentation Command-line tool, used to interact with system management infrastructure. **shadowcopy**: WMIC class for managing Volume Shadow Copies (VSS). **delete**: Removes all existing shadow copies from the system. Ransomware Families Known to Use It: LockBit Nemty Ragnar Ryuk Avaddon Ako Get-WmiObject Win32_Shadowcopy ForEach-Object {$_.Delete();} Explanation: **Get-WmiObject Win32_Shadowcopy**: Retrieves all existing Volume Shadow Copies via WMI (Windows Management Instrumentation). **ForEach-Object { $_.Delete(); }**: Iterates over each shadow copy object and calls its .Delete() method to remove it. bcdedit /set {default} bootstatuspolicy ignoreallfailures bcdedit /set {default} recoveryenabled no Explanation: bcdedit: A command-line tool to manage Boot Configuration Data (BCD). /set {default}: Modifies the default boot entry. bootstatuspolicy ignoreallfailures: Tells the system not to launch recovery options, even after critical failures (e.g., blue screens). wbadmin DELETE SYSTEMSTATEBACKUP wbadmin DELETE SYSTEMSTATEBACKUP -deleteOldest Explanation: **wbadmin**: A native Windows command-line utility for managing backup and recovery. **DELETE SYSTEMSTATEBACKUP**: Deletes all System State backups, which include critical files for system recovery (e.g., registry, boot files, Active Directory for domain controllers). Deletes only the oldest System State backup. Used either to clear disk space or, in the case of malware, to incrementally remove recovery points. net stop BackupExecAgentAccelerator /y net stop BackupExecVSSProvider /y Explanation: **net stop**: A Windows command used to stop running services. **BackupExecAgentAccelerator**: A service used by Veritas Backup Exec to speed up backup operations. **BackupExecVSSProvider**: A Veritas component that integrates with the Volume Shadow Copy Service (VSS) to manage backup snapshots. The /y flag automatically confirms dependent service stops without prompting." />
-<meta property="og:description" content="Ransomware remains one of the most pressing cybersecurity threats facing organizations globally. Over the past several years, its adoption has surged — not only among sophisticated APT groups and commodity malware operators but also among opportunistic threat actors with no prior history of using ransomware. Initially, attackers leveraged ransomware to exploit gaps in incident response, such as the absence of reliable backups or robust disaster recovery plans. Their goal was often to pressure victims into paying to restore operations and minimize downtime. However, a harsh reality persists: even when ransoms are paid, full recovery is rarely achieved. Many victims are left with corrupted systems, incomplete data restoration, and lingering operational disruptions — highlighting the critical importance of proactive defense and resilience over reliance on payment. What’s a vssadmin ? Vssadmin is a Windows command-line utility used to manage Volume Shadow Copy Services (VSS), which are responsible for creating and maintaining backup snapshots — known as shadow copies — of volumes or files. Shadow copies allow users and system processes to restore previous versions of files, even if the originals are deleted or modified. Attackers and ransomware often target vssadmin to delete these shadow copies, effectively removing the victim’s ability to recover data without paying a ransom. Disabling or wiping shadow copies is a common anti-recovery tactic seen in modern ransomware campaigns. what is a shadow copy? A shadow copy (also known as a Volume Shadow Copy or VSS snapshot) is a snapshot of a file or volume at a specific point in time, created by the Windows Volume Shadow Copy Service (VSS). It allows the system — or users — to recover previous versions of files, even while those files are in use. Key Points: It’s used by backup software and Windows features like “Previous Versions” to restore files or system states. Shadow copies are read-only and stored locally on disk. They’re commonly used for system restore points, ensuring you can roll back to a stable configuration. Inhibiting System Recovery — MITRE ATT&amp;CK Technique T1490 Inhibit System Recovery Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery of a corrupted… attack.mitre.org Ransomware frequently employs a range of techniques to disrupt system recovery, prevent future restorations, and corrupt or delete existing recovery points. the most commonly observed tactic was the use of vssadmin to delete Volume Shadow Copies from the system. As this technique became widespread and easily detectable, ransomware developers began exploring alternative methods, leveraging built-in Windows utilities such as PowerShell, wmic, bcdedit, net.exe, and wbadmin. According to data provided by MITRE, more than 25 ransomware groups and malware families have been documented using techniques to delete or tamper with Volume Shadow Copies (VSS). This widespread abuse of the Windows Volume Shadow Copy Service underscores a critical tactic used to inhibit system recovery and force ransom payments. While early variants relied primarily on vssadmin.exe, modern strains now leverage a variety of native Windows utilities—including PowerShell, wmic, bcdedit, net.exe, and wbadmin—to ensure the destruction of backups. The prevalence of this behavior highlights how difficult it is to attribute ransomware based solely on recovery prevention methods. Shadow Copy and Recovery Inhibition via Built-in Tools Objective: Identify processes commonly used by ransomware or threat actors to delete shadow copies, disable recovery mechanisms, or otherwise inhibit system recovery. Detection Criteria: Process Name is any of the following: vssadmin.exe bcdedit.exe wmic.exe powershell.exe wbadmin.exe Command Line contains any of the following indicative keywords or parameters: recoveryenabled no IgnoreAllFailures delete shadows delete systemstatebackup resize shadowstorage _ShadowCopy safeboot minimal shadowcopy /nointeractive shadowcopy delete vssadmin.exe Delete Shadows /All /Quiet Explanation: **vssadmin.exe**: Native Windows utility for managing Volume Shadow Copies (VSS). **Delete Shadows**: Instructs Windows to delete shadow copies. **/All**: Deletes all shadow copies on the system. **/Quiet**: Suppresses confirmation prompts and output — executes silently. Known Ransomware Families Using It: Conti Ryuk LockBit Avaddon Ragnar Netwalker Nemty ProLock wmic shadowcopy delete Explanation: **wmic**: Windows Management Instrumentation Command-line tool, used to interact with system management infrastructure. **shadowcopy**: WMIC class for managing Volume Shadow Copies (VSS). **delete**: Removes all existing shadow copies from the system. Ransomware Families Known to Use It: LockBit Nemty Ragnar Ryuk Avaddon Ako Get-WmiObject Win32_Shadowcopy ForEach-Object {$_.Delete();} Explanation: **Get-WmiObject Win32_Shadowcopy**: Retrieves all existing Volume Shadow Copies via WMI (Windows Management Instrumentation). **ForEach-Object { $_.Delete(); }**: Iterates over each shadow copy object and calls its .Delete() method to remove it. bcdedit /set {default} bootstatuspolicy ignoreallfailures bcdedit /set {default} recoveryenabled no Explanation: bcdedit: A command-line tool to manage Boot Configuration Data (BCD). /set {default}: Modifies the default boot entry. bootstatuspolicy ignoreallfailures: Tells the system not to launch recovery options, even after critical failures (e.g., blue screens). wbadmin DELETE SYSTEMSTATEBACKUP wbadmin DELETE SYSTEMSTATEBACKUP -deleteOldest Explanation: **wbadmin**: A native Windows command-line utility for managing backup and recovery. **DELETE SYSTEMSTATEBACKUP**: Deletes all System State backups, which include critical files for system recovery (e.g., registry, boot files, Active Directory for domain controllers). Deletes only the oldest System State backup. Used either to clear disk space or, in the case of malware, to incrementally remove recovery points. net stop BackupExecAgentAccelerator /y net stop BackupExecVSSProvider /y Explanation: **net stop**: A Windows command used to stop running services. **BackupExecAgentAccelerator**: A service used by Veritas Backup Exec to speed up backup operations. **BackupExecVSSProvider**: A Veritas component that integrates with the Volume Shadow Copy Service (VSS) to manage backup snapshots. The /y flag automatically confirms dependent service stops without prompting." />
-<link rel="canonical" href="http://0.0.0.0:4000/2025/06/01/The-War-on-Shadow/" />
-<meta property="og:url" content="http://0.0.0.0:4000/2025/06/01/The-War-on-Shadow/" />
-<meta property="og:site_name" content="Ahmed Khalifa" />
-<meta property="og:type" content="article" />
-<meta property="article:published_time" content="2025-06-01T08:56:00+03:00" />
-<meta name="twitter:card" content="summary" />
-<meta property="twitter:title" content="Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery" />
-<meta name="twitter:site" content="@kh4lifa0x" />
-<meta name="twitter:creator" content="@Songzi Vong" />
-<meta name="google-site-verification" content="xxxxx" />
-<script type="application/ld+json">
+  <title>Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery | Ahmed Khalifa</title>
+  <meta name="generator" content="Jekyll v4.4.1" />
+  <meta property="og:title" content="Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery" />
+  <meta name="author" content="Songzi Vong" />
+  <meta property="og:locale" content="en" />
+  <meta name="description"
+    content="Ransomware remains one of the most pressing cybersecurity threats facing organizations globally. Over the past several years, its adoption has surged — not only among sophisticated APT groups and commodity malware operators but also among opportunistic threat actors with no prior history of using ransomware. Initially, attackers leveraged ransomware to exploit gaps in incident response, such as the absence of reliable backups or robust disaster recovery plans. Their goal was often to pressure victims into paying to restore operations and minimize downtime. However, a harsh reality persists: even when ransoms are paid, full recovery is rarely achieved. Many victims are left with corrupted systems, incomplete data restoration, and lingering operational disruptions — highlighting the critical importance of proactive defense and resilience over reliance on payment. What’s a vssadmin ? Vssadmin is a Windows command-line utility used to manage Volume Shadow Copy Services (VSS), which are responsible for creating and maintaining backup snapshots — known as shadow copies — of volumes or files. Shadow copies allow users and system processes to restore previous versions of files, even if the originals are deleted or modified. Attackers and ransomware often target vssadmin to delete these shadow copies, effectively removing the victim’s ability to recover data without paying a ransom. Disabling or wiping shadow copies is a common anti-recovery tactic seen in modern ransomware campaigns. what is a shadow copy? A shadow copy (also known as a Volume Shadow Copy or VSS snapshot) is a snapshot of a file or volume at a specific point in time, created by the Windows Volume Shadow Copy Service (VSS). It allows the system — or users — to recover previous versions of files, even while those files are in use. Key Points: It’s used by backup software and Windows features like “Previous Versions” to restore files or system states. Shadow copies are read-only and stored locally on disk. They’re commonly used for system restore points, ensuring you can roll back to a stable configuration. Inhibiting System Recovery — MITRE ATT&amp;CK Technique T1490 Inhibit System Recovery Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery of a corrupted… attack.mitre.org Ransomware frequently employs a range of techniques to disrupt system recovery, prevent future restorations, and corrupt or delete existing recovery points. the most commonly observed tactic was the use of vssadmin to delete Volume Shadow Copies from the system. As this technique became widespread and easily detectable, ransomware developers began exploring alternative methods, leveraging built-in Windows utilities such as PowerShell, wmic, bcdedit, net.exe, and wbadmin. According to data provided by MITRE, more than 25 ransomware groups and malware families have been documented using techniques to delete or tamper with Volume Shadow Copies (VSS). This widespread abuse of the Windows Volume Shadow Copy Service underscores a critical tactic used to inhibit system recovery and force ransom payments. While early variants relied primarily on vssadmin.exe, modern strains now leverage a variety of native Windows utilities—including PowerShell, wmic, bcdedit, net.exe, and wbadmin—to ensure the destruction of backups. The prevalence of this behavior highlights how difficult it is to attribute ransomware based solely on recovery prevention methods. Shadow Copy and Recovery Inhibition via Built-in Tools Objective: Identify processes commonly used by ransomware or threat actors to delete shadow copies, disable recovery mechanisms, or otherwise inhibit system recovery. Detection Criteria: Process Name is any of the following: vssadmin.exe bcdedit.exe wmic.exe powershell.exe wbadmin.exe Command Line contains any of the following indicative keywords or parameters: recoveryenabled no IgnoreAllFailures delete shadows delete systemstatebackup resize shadowstorage _ShadowCopy safeboot minimal shadowcopy /nointeractive shadowcopy delete vssadmin.exe Delete Shadows /All /Quiet Explanation: **vssadmin.exe**: Native Windows utility for managing Volume Shadow Copies (VSS). **Delete Shadows**: Instructs Windows to delete shadow copies. **/All**: Deletes all shadow copies on the system. **/Quiet**: Suppresses confirmation prompts and output — executes silently. Known Ransomware Families Using It: Conti Ryuk LockBit Avaddon Ragnar Netwalker Nemty ProLock wmic shadowcopy delete Explanation: **wmic**: Windows Management Instrumentation Command-line tool, used to interact with system management infrastructure. **shadowcopy**: WMIC class for managing Volume Shadow Copies (VSS). **delete**: Removes all existing shadow copies from the system. Ransomware Families Known to Use It: LockBit Nemty Ragnar Ryuk Avaddon Ako Get-WmiObject Win32_Shadowcopy ForEach-Object {$_.Delete();} Explanation: **Get-WmiObject Win32_Shadowcopy**: Retrieves all existing Volume Shadow Copies via WMI (Windows Management Instrumentation). **ForEach-Object { $_.Delete(); }**: Iterates over each shadow copy object and calls its .Delete() method to remove it. bcdedit /set {default} bootstatuspolicy ignoreallfailures bcdedit /set {default} recoveryenabled no Explanation: bcdedit: A command-line tool to manage Boot Configuration Data (BCD). /set {default}: Modifies the default boot entry. bootstatuspolicy ignoreallfailures: Tells the system not to launch recovery options, even after critical failures (e.g., blue screens). wbadmin DELETE SYSTEMSTATEBACKUP wbadmin DELETE SYSTEMSTATEBACKUP -deleteOldest Explanation: **wbadmin**: A native Windows command-line utility for managing backup and recovery. **DELETE SYSTEMSTATEBACKUP**: Deletes all System State backups, which include critical files for system recovery (e.g., registry, boot files, Active Directory for domain controllers). Deletes only the oldest System State backup. Used either to clear disk space or, in the case of malware, to incrementally remove recovery points. net stop BackupExecAgentAccelerator /y net stop BackupExecVSSProvider /y Explanation: **net stop**: A Windows command used to stop running services. **BackupExecAgentAccelerator**: A service used by Veritas Backup Exec to speed up backup operations. **BackupExecVSSProvider**: A Veritas component that integrates with the Volume Shadow Copy Service (VSS) to manage backup snapshots. The /y flag automatically confirms dependent service stops without prompting." />
+  <meta property="og:description"
+    content="Ransomware remains one of the most pressing cybersecurity threats facing organizations globally. Over the past several years, its adoption has surged — not only among sophisticated APT groups and commodity malware operators but also among opportunistic threat actors with no prior history of using ransomware. Initially, attackers leveraged ransomware to exploit gaps in incident response, such as the absence of reliable backups or robust disaster recovery plans. Their goal was often to pressure victims into paying to restore operations and minimize downtime. However, a harsh reality persists: even when ransoms are paid, full recovery is rarely achieved. Many victims are left with corrupted systems, incomplete data restoration, and lingering operational disruptions — highlighting the critical importance of proactive defense and resilience over reliance on payment. What’s a vssadmin ? Vssadmin is a Windows command-line utility used to manage Volume Shadow Copy Services (VSS), which are responsible for creating and maintaining backup snapshots — known as shadow copies — of volumes or files. Shadow copies allow users and system processes to restore previous versions of files, even if the originals are deleted or modified. Attackers and ransomware often target vssadmin to delete these shadow copies, effectively removing the victim’s ability to recover data without paying a ransom. Disabling or wiping shadow copies is a common anti-recovery tactic seen in modern ransomware campaigns. what is a shadow copy? A shadow copy (also known as a Volume Shadow Copy or VSS snapshot) is a snapshot of a file or volume at a specific point in time, created by the Windows Volume Shadow Copy Service (VSS). It allows the system — or users — to recover previous versions of files, even while those files are in use. Key Points: It’s used by backup software and Windows features like “Previous Versions” to restore files or system states. Shadow copies are read-only and stored locally on disk. They’re commonly used for system restore points, ensuring you can roll back to a stable configuration. Inhibiting System Recovery — MITRE ATT&amp;CK Technique T1490 Inhibit System Recovery Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery of a corrupted… attack.mitre.org Ransomware frequently employs a range of techniques to disrupt system recovery, prevent future restorations, and corrupt or delete existing recovery points. the most commonly observed tactic was the use of vssadmin to delete Volume Shadow Copies from the system. As this technique became widespread and easily detectable, ransomware developers began exploring alternative methods, leveraging built-in Windows utilities such as PowerShell, wmic, bcdedit, net.exe, and wbadmin. According to data provided by MITRE, more than 25 ransomware groups and malware families have been documented using techniques to delete or tamper with Volume Shadow Copies (VSS). This widespread abuse of the Windows Volume Shadow Copy Service underscores a critical tactic used to inhibit system recovery and force ransom payments. While early variants relied primarily on vssadmin.exe, modern strains now leverage a variety of native Windows utilities—including PowerShell, wmic, bcdedit, net.exe, and wbadmin—to ensure the destruction of backups. The prevalence of this behavior highlights how difficult it is to attribute ransomware based solely on recovery prevention methods. Shadow Copy and Recovery Inhibition via Built-in Tools Objective: Identify processes commonly used by ransomware or threat actors to delete shadow copies, disable recovery mechanisms, or otherwise inhibit system recovery. Detection Criteria: Process Name is any of the following: vssadmin.exe bcdedit.exe wmic.exe powershell.exe wbadmin.exe Command Line contains any of the following indicative keywords or parameters: recoveryenabled no IgnoreAllFailures delete shadows delete systemstatebackup resize shadowstorage _ShadowCopy safeboot minimal shadowcopy /nointeractive shadowcopy delete vssadmin.exe Delete Shadows /All /Quiet Explanation: **vssadmin.exe**: Native Windows utility for managing Volume Shadow Copies (VSS). **Delete Shadows**: Instructs Windows to delete shadow copies. **/All**: Deletes all shadow copies on the system. **/Quiet**: Suppresses confirmation prompts and output — executes silently. Known Ransomware Families Using It: Conti Ryuk LockBit Avaddon Ragnar Netwalker Nemty ProLock wmic shadowcopy delete Explanation: **wmic**: Windows Management Instrumentation Command-line tool, used to interact with system management infrastructure. **shadowcopy**: WMIC class for managing Volume Shadow Copies (VSS). **delete**: Removes all existing shadow copies from the system. Ransomware Families Known to Use It: LockBit Nemty Ragnar Ryuk Avaddon Ako Get-WmiObject Win32_Shadowcopy ForEach-Object {$_.Delete();} Explanation: **Get-WmiObject Win32_Shadowcopy**: Retrieves all existing Volume Shadow Copies via WMI (Windows Management Instrumentation). **ForEach-Object { $_.Delete(); }**: Iterates over each shadow copy object and calls its .Delete() method to remove it. bcdedit /set {default} bootstatuspolicy ignoreallfailures bcdedit /set {default} recoveryenabled no Explanation: bcdedit: A command-line tool to manage Boot Configuration Data (BCD). /set {default}: Modifies the default boot entry. bootstatuspolicy ignoreallfailures: Tells the system not to launch recovery options, even after critical failures (e.g., blue screens). wbadmin DELETE SYSTEMSTATEBACKUP wbadmin DELETE SYSTEMSTATEBACKUP -deleteOldest Explanation: **wbadmin**: A native Windows command-line utility for managing backup and recovery. **DELETE SYSTEMSTATEBACKUP**: Deletes all System State backups, which include critical files for system recovery (e.g., registry, boot files, Active Directory for domain controllers). Deletes only the oldest System State backup. Used either to clear disk space or, in the case of malware, to incrementally remove recovery points. net stop BackupExecAgentAccelerator /y net stop BackupExecVSSProvider /y Explanation: **net stop**: A Windows command used to stop running services. **BackupExecAgentAccelerator**: A service used by Veritas Backup Exec to speed up backup operations. **BackupExecVSSProvider**: A Veritas component that integrates with the Volume Shadow Copy Service (VSS) to manage backup snapshots. The /y flag automatically confirms dependent service stops without prompting." />
+  <link rel="canonical" href="http://0.0.0.0:4000/2025/06/01/The-War-on-Shadow/" />
+  <meta property="og:url" content="http://0.0.0.0:4000/2025/06/01/The-War-on-Shadow/" />
+  <meta property="og:site_name" content="Ahmed Khalifa" />
+  <meta property="og:type" content="article" />
+  <meta property="article:published_time" content="2025-06-01T08:56:00+03:00" />
+  <meta name="twitter:card" content="summary" />
+  <meta property="twitter:title" content="Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery" />
+  <meta name="twitter:site" content="@kh4lifa0x" />
+  <meta name="twitter:creator" content="@Songzi Vong" />
+  <meta name="google-site-verification" content="xxxxx" />
+  <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Songzi Vong"},"dateModified":"2025-06-01T08:56:00+03:00","datePublished":"2025-06-01T08:56:00+03:00","description":"Ransomware remains one of the most pressing cybersecurity threats facing organizations globally. Over the past several years, its adoption has surged — not only among sophisticated APT groups and commodity malware operators but also among opportunistic threat actors with no prior history of using ransomware. Initially, attackers leveraged ransomware to exploit gaps in incident response, such as the absence of reliable backups or robust disaster recovery plans. Their goal was often to pressure victims into paying to restore operations and minimize downtime. However, a harsh reality persists: even when ransoms are paid, full recovery is rarely achieved. Many victims are left with corrupted systems, incomplete data restoration, and lingering operational disruptions — highlighting the critical importance of proactive defense and resilience over reliance on payment. What’s a vssadmin ? Vssadmin is a Windows command-line utility used to manage Volume Shadow Copy Services (VSS), which are responsible for creating and maintaining backup snapshots — known as shadow copies — of volumes or files. Shadow copies allow users and system processes to restore previous versions of files, even if the originals are deleted or modified. Attackers and ransomware often target vssadmin to delete these shadow copies, effectively removing the victim’s ability to recover data without paying a ransom. Disabling or wiping shadow copies is a common anti-recovery tactic seen in modern ransomware campaigns. what is a shadow copy? A shadow copy (also known as a Volume Shadow Copy or VSS snapshot) is a snapshot of a file or volume at a specific point in time, created by the Windows Volume Shadow Copy Service (VSS). It allows the system — or users — to recover previous versions of files, even while those files are in use. Key Points: It’s used by backup software and Windows features like “Previous Versions” to restore files or system states. Shadow copies are read-only and stored locally on disk. They’re commonly used for system restore points, ensuring you can roll back to a stable configuration. Inhibiting System Recovery — MITRE ATT&amp;CK Technique T1490 Inhibit System Recovery Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery of a corrupted… attack.mitre.org Ransomware frequently employs a range of techniques to disrupt system recovery, prevent future restorations, and corrupt or delete existing recovery points. the most commonly observed tactic was the use of vssadmin to delete Volume Shadow Copies from the system. As this technique became widespread and easily detectable, ransomware developers began exploring alternative methods, leveraging built-in Windows utilities such as PowerShell, wmic, bcdedit, net.exe, and wbadmin. According to data provided by MITRE, more than 25 ransomware groups and malware families have been documented using techniques to delete or tamper with Volume Shadow Copies (VSS). This widespread abuse of the Windows Volume Shadow Copy Service underscores a critical tactic used to inhibit system recovery and force ransom payments. While early variants relied primarily on vssadmin.exe, modern strains now leverage a variety of native Windows utilities—including PowerShell, wmic, bcdedit, net.exe, and wbadmin—to ensure the destruction of backups. The prevalence of this behavior highlights how difficult it is to attribute ransomware based solely on recovery prevention methods. Shadow Copy and Recovery Inhibition via Built-in Tools Objective: Identify processes commonly used by ransomware or threat actors to delete shadow copies, disable recovery mechanisms, or otherwise inhibit system recovery. Detection Criteria: Process Name is any of the following: vssadmin.exe bcdedit.exe wmic.exe powershell.exe wbadmin.exe Command Line contains any of the following indicative keywords or parameters: recoveryenabled no IgnoreAllFailures delete shadows delete systemstatebackup resize shadowstorage _ShadowCopy safeboot minimal shadowcopy /nointeractive shadowcopy delete vssadmin.exe Delete Shadows /All /Quiet Explanation: **vssadmin.exe**: Native Windows utility for managing Volume Shadow Copies (VSS). **Delete Shadows**: Instructs Windows to delete shadow copies. **/All**: Deletes all shadow copies on the system. **/Quiet**: Suppresses confirmation prompts and output — executes silently. Known Ransomware Families Using It: Conti Ryuk LockBit Avaddon Ragnar Netwalker Nemty ProLock wmic shadowcopy delete Explanation: **wmic**: Windows Management Instrumentation Command-line tool, used to interact with system management infrastructure. **shadowcopy**: WMIC class for managing Volume Shadow Copies (VSS). **delete**: Removes all existing shadow copies from the system. Ransomware Families Known to Use It: LockBit Nemty Ragnar Ryuk Avaddon Ako Get-WmiObject Win32_Shadowcopy ForEach-Object {$_.Delete();} Explanation: **Get-WmiObject Win32_Shadowcopy**: Retrieves all existing Volume Shadow Copies via WMI (Windows Management Instrumentation). **ForEach-Object { $_.Delete(); }**: Iterates over each shadow copy object and calls its .Delete() method to remove it. bcdedit /set {default} bootstatuspolicy ignoreallfailures bcdedit /set {default} recoveryenabled no Explanation: bcdedit: A command-line tool to manage Boot Configuration Data (BCD). /set {default}: Modifies the default boot entry. bootstatuspolicy ignoreallfailures: Tells the system not to launch recovery options, even after critical failures (e.g., blue screens). wbadmin DELETE SYSTEMSTATEBACKUP wbadmin DELETE SYSTEMSTATEBACKUP -deleteOldest Explanation: **wbadmin**: A native Windows command-line utility for managing backup and recovery. **DELETE SYSTEMSTATEBACKUP**: Deletes all System State backups, which include critical files for system recovery (e.g., registry, boot files, Active Directory for domain controllers). Deletes only the oldest System State backup. Used either to clear disk space or, in the case of malware, to incrementally remove recovery points. net stop BackupExecAgentAccelerator /y net stop BackupExecVSSProvider /y Explanation: **net stop**: A Windows command used to stop running services. **BackupExecAgentAccelerator**: A service used by Veritas Backup Exec to speed up backup operations. **BackupExecVSSProvider**: A Veritas component that integrates with the Volume Shadow Copy Service (VSS) to manage backup snapshots. The /y flag automatically confirms dependent service stops without prompting.","headline":"Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/2025/06/01/The-War-on-Shadow/"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://0.0.0.0:4000/logo.png"},"name":"Songzi Vong"},"url":"http://0.0.0.0:4000/2025/06/01/The-War-on-Shadow/"}</script>
-<!-- End Jekyll SEO tag -->
-<link type="application/atom+xml" rel="alternate" href="http://0.0.0.0:4000/feed.xml" title="Ahmed Khalifa" />
+  <!-- End Jekyll SEO tag -->
+  <link type="application/atom+xml" rel="alternate" href="http://0.0.0.0:4000/feed.xml" title="Ahmed Khalifa" />
 </head>
 
 
-  <body>
+<body>
 
-    <div class="container pure-g"><div class="sidebar-left pure-u-1 pure-u-md-1-4"><header class="masthead">
-  <div class="avatar"><img src="/avatar.jpeg" class="avatar-image" alt="Ahmed Khalifa">
+  <div class="container pure-g">
+    <div class="sidebar-left pure-u-1 pure-u-md-1-4">
+      <header class="masthead">
+        <div class="avatar"><img src="/avatar.jpeg" class="avatar-image" alt="Ahmed Khalifa">
+        </div>
+        <div class="masthead-title">
+          <a href="/" title="Home">Ahmed Khalifa</a>
+        </div>
+        <div class="masthead-tagline">
+          <small>Threat Researcher & DFIR Engineer interested in Adversary Hunting and malware Research</small>
+        </div>
+        <nav class="navigation">
+          <ul class="navigation-list">
+            <li class="navigation-item">
+              <a onclick="sessionStorage.setItem('forceCheckScroll', 'true')" href="/">Blog</a>
+            </li>
+            <li class="navigation-item">
+              <a onclick="sessionStorage.setItem('forceCheckScroll', 'true')"
+                href="https://kh4lifa0x.github.io/about_me/">About</a>
+            </li>
+          </ul>
+        </nav>
+        <div class="social pure-menu pure-menu-horizontal">
+          <ul class="social-icons pure-menu-list">
+            <li class="pure-menu-item">
+              <a class="social-icon pure-menu-link" href="mailto://ahmedkhalifa8474hh@gmail.com">
+                <i class="fas fa-envelope" title="Email"></i>
+              </a>
+            </li>
+            <li class="pure-menu-item">
+              <a class="social-icon pure-menu-link" href="https://x.com/svchostss_exe">
+                <i class="fab fa-twitter" title="Twitter"></i>
+              </a>
+            </li>
+            <li class="pure-menu-item">
+              <a class="social-icon pure-menu-link" href="https://github.com/kh4lifa0x">
+                <i class="fab fa-github" title="GitHub"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </header>
     </div>
-  <div class="masthead-title">
-    <a href="/" title="Home">Ahmed Khalifa</a>
+
+    <div class="content pure-u-1 pure-u-md-1-2">
+      <main>
+        <article class="post">
+          <h1 class="post-title">Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery</h1>
+          <div class="post-meta"><time datetime="2025-06-01T08:56:00+03:00" itemprop="datePublished">1 Jun
+              2025</time><span> • </span>
+
+            <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+              Songzi Vong
+            </span>
+          </div>
+
+          <p><strong>Ransomware remains one of the most pressing cybersecurity threats facing organizations
+              globally.</strong> Over the past several years, its adoption has surged — not only among sophisticated APT
+            groups and commodity malware operators but also among opportunistic threat actors with no prior history of
+            using ransomware. Initially, attackers leveraged ransomware to exploit gaps in incident response, such as
+            the absence of reliable backups or robust disaster recovery plans. Their goal was often to pressure victims
+            into paying to restore operations and minimize downtime.</p>
+
+          <p>However, a harsh reality persists: <strong>even when ransoms are paid, full recovery is rarely
+              achieved.</strong> Many victims are left with corrupted systems, incomplete data restoration, and
+            lingering operational disruptions — highlighting the critical importance of proactive defense and resilience
+            over reliance on payment.</p>
+
+          <p><img src="https://miro.medium.com/v2/resize:fit:796/0*5RyChtGjLuJLnylD.jpg" alt="" /></p>
+
+          <h1 id="whats-a-vssadmin-"><strong>What’s a vssadmin ?</strong></h1>
+
+          <p><strong>Vssadmin is a Windows command-line utility used to manage Volume Shadow Copy Services
+              (VSS),</strong> which are responsible for creating and maintaining backup snapshots — known as shadow
+            copies — of volumes or files. Shadow copies allow users and system processes to restore previous versions of
+            files, even if the originals are deleted or modified.</p>
+
+          <p>Attackers and ransomware often target <code class="language-plaintext highlighter-rouge">vssadmin</code> to
+            delete these shadow copies, effectively removing the victim’s ability to recover data without paying a
+            ransom. Disabling or wiping shadow copies is a common anti-recovery tactic seen in modern ransomware
+            campaigns.</p>
+
+          <h1 id="what-is-a-shadow-copy"><strong>what is a shadow copy?</strong></h1>
+
+          <p>A <strong>shadow copy</strong> (also known as a <strong>Volume Shadow Copy</strong> or <strong>VSS
+              snapshot</strong>) is a <strong>snapshot of a file or volume at a specific point in time</strong>, created
+            by the Windows Volume Shadow Copy Service (VSS). It allows the system — or users — to <strong>recover
+              previous versions of files</strong>, even while those files are in use.</p>
+
+          <h1 id="key-points">Key Points:</h1>
+
+          <ul>
+            <li>It’s <strong>used by backup software</strong> and Windows features like “Previous Versions” to restore
+              files or system states.</li>
+            <li>Shadow copies are <strong>read-only</strong> and stored locally on disk.</li>
+            <li>They’re commonly used for <strong>system restore points</strong>, ensuring you can roll back to a stable
+              configuration.</li>
+          </ul>
+
+          <h1 id="inhibiting-system-recovery--mitre-attck-technique-t1490">Inhibiting System Recovery — MITRE ATT&amp;CK
+            Technique T1490</h1>
+
+          <p><a
+              href="https://attack.mitre.org/techniques/T1490/?source=post_page-----0d2d69214e24---------------------------------------"></a>
+          </p>
+
+          <h2 id="inhibit-system-recovery">Inhibit System Recovery</h2>
+
+          <h3
+            id="adversaries-may-delete-or-remove-built-in-data-and-turn-off-services-designed-to-aid-in-the-recovery-of-a-corrupted">
+            Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery of a
+            corrupted…</h3>
+
+          <p>attack.mitre.org</p>
+
+          <p><strong>Ransomware</strong> frequently employs a range of techniques to disrupt system recovery, prevent
+            future restorations, and corrupt or delete existing recovery points.</p>
+
+          <p>the most commonly observed tactic was the use of <code
+              class="language-plaintext highlighter-rouge">vssadmin</code> to delete Volume Shadow Copies from the
+            system. As this technique became widespread and easily detectable, ransomware developers began exploring
+            alternative methods, leveraging built-in Windows utilities such as PowerShell, <code
+              class="language-plaintext highlighter-rouge">wmic</code>, <code
+              class="language-plaintext highlighter-rouge">bcdedit</code>, <code
+              class="language-plaintext highlighter-rouge">net.exe</code>, and <code
+              class="language-plaintext highlighter-rouge">wbadmin</code>.</p>
+
+          <p>According to data provided by <strong>MITRE</strong>, <strong>more than 25 ransomware groups and malware
+              families have been documented using techniques to delete or tamper with Volume Shadow Copies
+              (VSS)</strong>. This widespread abuse of the Windows Volume Shadow Copy Service underscores a critical
+            tactic used to <strong>inhibit system recovery and force ransom payments</strong>. While early variants
+            relied primarily on <code class="language-plaintext highlighter-rouge">vssadmin.exe</code>, modern strains
+            now leverage a variety of native Windows utilities—including <code
+              class="language-plaintext highlighter-rouge">PowerShell</code>, <code
+              class="language-plaintext highlighter-rouge">wmic</code>, <code
+              class="language-plaintext highlighter-rouge">bcdedit</code>, <code
+              class="language-plaintext highlighter-rouge">net.exe</code>, and <code
+              class="language-plaintext highlighter-rouge">wbadmin</code>—to ensure the destruction of backups. The
+            prevalence of this behavior highlights how difficult it is to attribute ransomware based solely on recovery
+            prevention methods.</p>
+
+          <h1 id="shadow-copy-and-recovery-inhibition-via-built-in-tools">Shadow Copy and Recovery Inhibition via
+            Built-in Tools</h1>
+
+          <p><strong>Objective:</strong><br />
+            Identify processes commonly used by ransomware or threat actors to delete shadow copies, disable recovery
+            mechanisms, or otherwise inhibit system recovery.</p>
+
+          <p><strong>Detection Criteria:</strong></p>
+
+          <ul>
+            <li><strong>Process Name is any of the following:</strong></li>
+            <li><code class="language-plaintext highlighter-rouge">vssadmin.exe</code></li>
+            <li><code class="language-plaintext highlighter-rouge">bcdedit.exe</code></li>
+            <li><code class="language-plaintext highlighter-rouge">wmic.exe</code></li>
+            <li><code class="language-plaintext highlighter-rouge">powershell.exe</code></li>
+            <li><code class="language-plaintext highlighter-rouge">wbadmin.exe</code></li>
+            <li><strong>Command Line contains any of the following indicative keywords or parameters:</strong></li>
+            <li><code class="language-plaintext highlighter-rouge">recoveryenabled no</code></li>
+            <li><code class="language-plaintext highlighter-rouge">IgnoreAllFailures</code></li>
+            <li><code class="language-plaintext highlighter-rouge">delete shadows</code></li>
+            <li><code class="language-plaintext highlighter-rouge">delete systemstatebackup</code></li>
+            <li><code class="language-plaintext highlighter-rouge">resize shadowstorage</code></li>
+            <li><code class="language-plaintext highlighter-rouge">_ShadowCopy</code></li>
+            <li><code class="language-plaintext highlighter-rouge">safeboot minimal</code></li>
+            <li><code class="language-plaintext highlighter-rouge">shadowcopy /nointeractive</code></li>
+            <li><code class="language-plaintext highlighter-rouge">shadowcopy delete</code></li>
+          </ul>
+
+          <p>vssadmin.exe Delete Shadows /All /Quiet</p>
+
+          <h1 id="explanation">Explanation:</h1>
+
+          <ul>
+            <li><code class="language-plaintext highlighter-rouge">**vssadmin.exe**</code>: Native Windows utility for
+              managing Volume Shadow Copies (VSS).</li>
+            <li><code class="language-plaintext highlighter-rouge">**Delete Shadows**</code>: Instructs Windows to
+              delete shadow copies.</li>
+            <li><code class="language-plaintext highlighter-rouge">**/All**</code>: Deletes <em>all</em> shadow copies
+              on the system.</li>
+            <li><code class="language-plaintext highlighter-rouge">**/Quiet**</code>: Suppresses confirmation prompts
+              and output — executes silently.<br />
+              Known Ransomware Families Using It:</li>
+            <li><strong>Conti</strong></li>
+            <li><strong>Ryuk</strong></li>
+            <li><strong>LockBit</strong></li>
+            <li><strong>Avaddon</strong></li>
+            <li><strong>Ragnar</strong></li>
+            <li><strong>Netwalker</strong></li>
+            <li><strong>Nemty</strong></li>
+            <li><strong>ProLock</strong></li>
+          </ul>
+
+          <p>wmic shadowcopy delete</p>
+
+          <h1 id="explanation-1">Explanation:</h1>
+
+          <ul>
+            <li><code class="language-plaintext highlighter-rouge">**wmic**</code>: Windows Management Instrumentation
+              Command-line tool, used to interact with system management infrastructure.</li>
+            <li><code class="language-plaintext highlighter-rouge">**shadowcopy**</code>: WMIC class for managing Volume
+              Shadow Copies (VSS).</li>
+            <li><code class="language-plaintext highlighter-rouge">**delete**</code>: Removes all existing shadow copies
+              from the system.</li>
+          </ul>
+
+          <h1 id="ransomware-families-known-to-use-it">Ransomware Families Known to Use It:</h1>
+
+          <ul>
+            <li><strong>LockBit</strong></li>
+            <li><strong>Nemty</strong></li>
+            <li><strong>Ragnar</strong></li>
+            <li><strong>Ryuk</strong></li>
+            <li><strong>Avaddon</strong></li>
+            <li><strong>Ako</strong></li>
+          </ul>
+
+          <table>
+            <tbody>
+              <tr>
+                <td>Get-WmiObject Win32_Shadowcopy</td>
+                <td>ForEach-Object {$_.Delete();}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h1 id="explanation-2">Explanation:</h1>
+
+          <ul>
+            <li><code class="language-plaintext highlighter-rouge">**Get-WmiObject Win32_Shadowcopy**</code>: Retrieves
+              all existing Volume Shadow Copies via WMI (Windows Management Instrumentation).</li>
+            <li><code class="language-plaintext highlighter-rouge">**ForEach-Object { $_.Delete(); }**</code>: Iterates
+              over each shadow copy object and calls its <code
+                class="language-plaintext highlighter-rouge">.Delete()</code> method to remove it.</li>
+          </ul>
+
+          <p>bcdedit /set {default} bootstatuspolicy ignoreallfailures <br />
+            bcdedit /set {default} recoveryenabled no</p>
+
+          <h2 id="explanation-3">Explanation:</h2>
+
+          <ul>
+            <li><code class="language-plaintext highlighter-rouge">bcdedit</code>: A command-line tool to manage Boot
+              Configuration Data (BCD).</li>
+            <li><code class="language-plaintext highlighter-rouge">/set {default}</code>: Modifies the default boot
+              entry.</li>
+            <li><code class="language-plaintext highlighter-rouge">bootstatuspolicy ignoreallfailures</code>: Tells the
+              system <strong>not to launch recovery options</strong>, even after critical failures (e.g., blue screens).
+            </li>
+          </ul>
+
+          <p>wbadmin DELETE SYSTEMSTATEBACKUP <br />
+            wbadmin DELETE SYSTEMSTATEBACKUP -deleteOldest</p>
+
+          <h2 id="explanation-4">Explanation:</h2>
+
+          <ul>
+            <li><code class="language-plaintext highlighter-rouge">**wbadmin**</code>: A native Windows command-line
+              utility for managing backup and recovery.</li>
+            <li><code class="language-plaintext highlighter-rouge">**DELETE SYSTEMSTATEBACKUP**</code>: Deletes all
+              <strong>System State backups</strong>, which include critical files for system recovery (e.g., registry,
+              boot files, Active Directory for domain controllers).</li>
+            <li>Deletes <strong>only the oldest System State backup</strong>.</li>
+            <li>Used either to clear disk space or, in the case of malware, to <strong>incrementally remove recovery
+                points</strong>.</li>
+          </ul>
+
+          <p>net stop BackupExecAgentAccelerator /y <br />
+            net stop BackupExecVSSProvider /y</p>
+
+          <h2 id="explanation-5">Explanation:</h2>
+
+          <ul>
+            <li><code class="language-plaintext highlighter-rouge">**net stop**</code>: A Windows command used to stop
+              running services.</li>
+            <li><code class="language-plaintext highlighter-rouge">**BackupExecAgentAccelerator**</code>: A service used
+              by <strong>Veritas Backup Exec</strong> to speed up backup operations.</li>
+            <li><code class="language-plaintext highlighter-rouge">**BackupExecVSSProvider**</code>: A Veritas component
+              that integrates with the <strong>Volume Shadow Copy Service (VSS)</strong> to manage backup snapshots.
+            </li>
+          </ul>
+
+          <p>The <code class="language-plaintext highlighter-rouge">/y</code> flag <strong>automatically confirms
+              dependent service stops</strong> without prompting.</p>
+
+
+
+
+          <div class="post-tags-section">
+            <i class="post-tags-icon fas fa-tags"></i>
+            <ul class="post-tags">
+              <li>
+                <a class="post-tag" href="/tags/#shadowcopy">shadowcopy</a>
+              </li>
+              <li>
+                <a class="post-tag" href="/tags/#vss">vss</a>
+              </li>
+            </ul>
+          </div>
+
+
+
+
+        </article>
+
+
+        <aside class="related">
+          <h2>Related posts</h2>
+          <ul class="related-posts">
+
+            <li>
+              <a href="/malware%20analysis/2025/07/21/cve-2025-53770-viewstate-rce/">
+                CVE-2025-53770 Remote Code Execution via ViewState Abuse
+                <small><time datetime="2025-07-21T00:00:00+03:00">21 Jul 2025</time></small>
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="/threat%20intelligence/ransomware/incident%20response/2025/07/18/operational-analysis-of-ransomware-attack-lifecycle/">
+                Operational Analysis of Ransomware Attack Lifecycle
+                <small><time datetime="2025-07-18T00:00:00+03:00">18 Jul 2025</time></small>
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="/threat%20intelligence/crypto%20crime/incident%20response/2025/07/18/nobitex-breach-81-million-theft-under-investigation/">
+                Nobitex Breach: $81 Million Theft Under Investigation
+                <small><time datetime="2025-07-18T00:00:00+03:00">18 Jul 2025</time></small>
+              </a>
+            </li>
+
+          </ul>
+        </aside>
+
+
+      </main>
+
+      <footer class="footer"><small>
+          &copy; 2025 <a href="https://github.com/kh4lifa0x/">Ahmed Khalifa</a>. All rights reserved.
+          Powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://github.com/vszhub/not-pure-poole">Not
+            Pure Poole</a>.
+        </small>
+      </footer>
+    </div>
+    <div class="sidebar-right pure-u-1 pure-u-md-1-4">
+    </div>
   </div>
-  <div class="masthead-tagline">
-    <small>Threat Researcher & DFIR Engineer interested in Adversary Hunting and malware Research</small>
-  </div><nav class="navigation">
-    <ul class="navigation-list"><li class="navigation-item">
-        <a onclick="sessionStorage.setItem('forceCheckScroll', 'true')" href="/">Blog</a>
-      </li><li class="navigation-item">
-        <a onclick="sessionStorage.setItem('forceCheckScroll', 'true')" href="/about/">About</a>
-      </li></ul>
-  </nav><div class="social pure-menu pure-menu-horizontal">
-      <ul class="social-icons pure-menu-list">
-      <li class="pure-menu-item">
-          <a class="social-icon pure-menu-link" href="mailto://ahmedkhalifa8474hh@gmail.com">
-            <i class="fas fa-envelope" title="Email"></i>
-          </a>
-        </li><li class="pure-menu-item">
-          <a class="social-icon pure-menu-link" href="https://x.com/svchostss_exe">
-            <i class="fab fa-twitter" title="Twitter"></i>
-          </a>
-        </li><li class="pure-menu-item">
-          <a class="social-icon pure-menu-link" href="https://github.com/kh4lifa0x">
-            <i class="fab fa-github" title="GitHub"></i>
-          </a>
-        </li>
-      </ul>
-    </div>
-</header>
-</div>
 
-      <div class="content pure-u-1 pure-u-md-1-2"><main>
-  <article class="post">
-  <h1 class="post-title">Inhibit. Encrypt. Extort. — The War on Shadow Copies and System Recovery</h1>
-  <div class="post-meta"><time datetime="2025-06-01T08:56:00+03:00" itemprop="datePublished">1 Jun 2025</time><span> • </span>
-      
-        <span itemprop="author" itemscope itemtype="http://schema.org/Person">
-          Songzi Vong
-        </span></div>
-
-  <p><strong>Ransomware remains one of the most pressing cybersecurity threats facing organizations globally.</strong>  Over the past several years, its adoption has surged — not only among sophisticated APT groups and commodity malware operators but also among opportunistic threat actors with no prior history of using ransomware. Initially, attackers leveraged ransomware to exploit gaps in incident response, such as the absence of reliable backups or robust disaster recovery plans. Their goal was often to pressure victims into paying to restore operations and minimize downtime.</p>
-
-<p>However, a harsh reality persists:  <strong>even when ransoms are paid, full recovery is rarely achieved.</strong>  Many victims are left with corrupted systems, incomplete data restoration, and lingering operational disruptions — highlighting the critical importance of proactive defense and resilience over reliance on payment.</p>
-
-<p><img src="https://miro.medium.com/v2/resize:fit:796/0*5RyChtGjLuJLnylD.jpg" alt="" /></p>
-
-<h1 id="whats-a-vssadmin-"><strong>What’s a vssadmin ?</strong></h1>
-
-<p><strong>Vssadmin is a Windows command-line utility used to manage Volume Shadow Copy Services (VSS),</strong>  which are responsible for creating and maintaining backup snapshots — known as shadow copies — of volumes or files. Shadow copies allow users and system processes to restore previous versions of files, even if the originals are deleted or modified.</p>
-
-<p>Attackers and ransomware often target  <code class="language-plaintext highlighter-rouge">vssadmin</code>  to delete these shadow copies, effectively removing the victim’s ability to recover data without paying a ransom. Disabling or wiping shadow copies is a common anti-recovery tactic seen in modern ransomware campaigns.</p>
-
-<h1 id="what-is-a-shadow-copy"><strong>what is a shadow copy?</strong></h1>
-
-<p>A  <strong>shadow copy</strong>  (also known as a  <strong>Volume Shadow Copy</strong>  or  <strong>VSS snapshot</strong>) is a  <strong>snapshot of a file or volume at a specific point in time</strong>, created by the Windows Volume Shadow Copy Service (VSS). It allows the system — or users — to  <strong>recover previous versions of files</strong>, even while those files are in use.</p>
-
-<h1 id="key-points">Key Points:</h1>
-
-<ul>
-  <li>It’s  <strong>used by backup software</strong>  and Windows features like “Previous Versions” to restore files or system states.</li>
-  <li>Shadow copies are  <strong>read-only</strong>  and stored locally on disk.</li>
-  <li>They’re commonly used for  <strong>system restore points</strong>, ensuring you can roll back to a stable configuration.</li>
-</ul>
-
-<h1 id="inhibiting-system-recovery--mitre-attck-technique-t1490">Inhibiting System Recovery — MITRE ATT&amp;CK Technique T1490</h1>
-
-<p><a href="https://attack.mitre.org/techniques/T1490/?source=post_page-----0d2d69214e24---------------------------------------"></a></p>
-
-<h2 id="inhibit-system-recovery">Inhibit System Recovery</h2>
-
-<h3 id="adversaries-may-delete-or-remove-built-in-data-and-turn-off-services-designed-to-aid-in-the-recovery-of-a-corrupted">Adversaries may delete or remove built-in data and turn off services designed to aid in the recovery of a corrupted…</h3>
-
-<p>attack.mitre.org</p>
-
-<p><strong>Ransomware</strong>  frequently employs a range of techniques to disrupt system recovery, prevent future restorations, and corrupt or delete existing recovery points.</p>
-
-<p>the most commonly observed tactic was the use of  <code class="language-plaintext highlighter-rouge">vssadmin</code>  to delete Volume Shadow Copies from the system. As this technique became widespread and easily detectable, ransomware developers began exploring alternative methods, leveraging built-in Windows utilities such as PowerShell,  <code class="language-plaintext highlighter-rouge">wmic</code>,  <code class="language-plaintext highlighter-rouge">bcdedit</code>,  <code class="language-plaintext highlighter-rouge">net.exe</code>, and  <code class="language-plaintext highlighter-rouge">wbadmin</code>.</p>
-
-<p>According to data provided by  <strong>MITRE</strong>,  <strong>more than 25 ransomware groups and malware families have been documented using techniques to delete or tamper with Volume Shadow Copies (VSS)</strong>. This widespread abuse of the Windows Volume Shadow Copy Service underscores a critical tactic used to  <strong>inhibit system recovery and force ransom payments</strong>. While early variants relied primarily on  <code class="language-plaintext highlighter-rouge">vssadmin.exe</code>, modern strains now leverage a variety of native Windows utilities—including  <code class="language-plaintext highlighter-rouge">PowerShell</code>,  <code class="language-plaintext highlighter-rouge">wmic</code>,  <code class="language-plaintext highlighter-rouge">bcdedit</code>,  <code class="language-plaintext highlighter-rouge">net.exe</code>, and  <code class="language-plaintext highlighter-rouge">wbadmin</code>—to ensure the destruction of backups. The prevalence of this behavior highlights how difficult it is to attribute ransomware based solely on recovery prevention methods.</p>
-
-<h1 id="shadow-copy-and-recovery-inhibition-via-built-in-tools">Shadow Copy and Recovery Inhibition via Built-in Tools</h1>
-
-<p><strong>Objective:</strong><br />
-Identify processes commonly used by ransomware or threat actors to delete shadow copies, disable recovery mechanisms, or otherwise inhibit system recovery.</p>
-
-<p><strong>Detection Criteria:</strong></p>
-
-<ul>
-  <li><strong>Process Name is any of the following:</strong></li>
-  <li><code class="language-plaintext highlighter-rouge">vssadmin.exe</code></li>
-  <li><code class="language-plaintext highlighter-rouge">bcdedit.exe</code></li>
-  <li><code class="language-plaintext highlighter-rouge">wmic.exe</code></li>
-  <li><code class="language-plaintext highlighter-rouge">powershell.exe</code></li>
-  <li><code class="language-plaintext highlighter-rouge">wbadmin.exe</code></li>
-  <li><strong>Command Line contains any of the following indicative keywords or parameters:</strong></li>
-  <li><code class="language-plaintext highlighter-rouge">recoveryenabled no</code></li>
-  <li><code class="language-plaintext highlighter-rouge">IgnoreAllFailures</code></li>
-  <li><code class="language-plaintext highlighter-rouge">delete shadows</code></li>
-  <li><code class="language-plaintext highlighter-rouge">delete systemstatebackup</code></li>
-  <li><code class="language-plaintext highlighter-rouge">resize shadowstorage</code></li>
-  <li><code class="language-plaintext highlighter-rouge">_ShadowCopy</code></li>
-  <li><code class="language-plaintext highlighter-rouge">safeboot minimal</code></li>
-  <li><code class="language-plaintext highlighter-rouge">shadowcopy /nointeractive</code></li>
-  <li><code class="language-plaintext highlighter-rouge">shadowcopy delete</code></li>
-</ul>
-
-<p>vssadmin.exe Delete Shadows /All /Quiet</p>
-
-<h1 id="explanation">Explanation:</h1>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">**vssadmin.exe**</code>: Native Windows utility for managing Volume Shadow Copies (VSS).</li>
-  <li><code class="language-plaintext highlighter-rouge">**Delete Shadows**</code>: Instructs Windows to delete shadow copies.</li>
-  <li><code class="language-plaintext highlighter-rouge">**/All**</code>: Deletes  <em>all</em>  shadow copies on the system.</li>
-  <li><code class="language-plaintext highlighter-rouge">**/Quiet**</code>: Suppresses confirmation prompts and output — executes silently.<br />
-Known Ransomware Families Using It:</li>
-  <li><strong>Conti</strong></li>
-  <li><strong>Ryuk</strong></li>
-  <li><strong>LockBit</strong></li>
-  <li><strong>Avaddon</strong></li>
-  <li><strong>Ragnar</strong></li>
-  <li><strong>Netwalker</strong></li>
-  <li><strong>Nemty</strong></li>
-  <li><strong>ProLock</strong></li>
-</ul>
-
-<p>wmic  shadowcopy delete</p>
-
-<h1 id="explanation-1">Explanation:</h1>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">**wmic**</code>: Windows Management Instrumentation Command-line tool, used to interact with system management infrastructure.</li>
-  <li><code class="language-plaintext highlighter-rouge">**shadowcopy**</code>: WMIC class for managing Volume Shadow Copies (VSS).</li>
-  <li><code class="language-plaintext highlighter-rouge">**delete**</code>: Removes all existing shadow copies from the system.</li>
-</ul>
-
-<h1 id="ransomware-families-known-to-use-it">Ransomware Families Known to Use It:</h1>
-
-<ul>
-  <li><strong>LockBit</strong></li>
-  <li><strong>Nemty</strong></li>
-  <li><strong>Ragnar</strong></li>
-  <li><strong>Ryuk</strong></li>
-  <li><strong>Avaddon</strong></li>
-  <li><strong>Ako</strong></li>
-</ul>
-
-<table>
-  <tbody>
-    <tr>
-      <td>Get-WmiObject Win32_Shadowcopy</td>
-      <td>ForEach-Object {$_.Delete();}</td>
-    </tr>
-  </tbody>
-</table>
-
-<h1 id="explanation-2">Explanation:</h1>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">**Get-WmiObject Win32_Shadowcopy**</code>: Retrieves all existing Volume Shadow Copies via WMI (Windows Management Instrumentation).</li>
-  <li><code class="language-plaintext highlighter-rouge">**ForEach-Object { $_.Delete(); }**</code>: Iterates over each shadow copy object and calls its  <code class="language-plaintext highlighter-rouge">.Delete()</code>  method to remove it.</li>
-</ul>
-
-<p>bcdedit  /set {default} bootstatuspolicy ignoreallfailures  <br />
-bcdedit  /set {default} recoveryenabled no</p>
-
-<h2 id="explanation-3">Explanation:</h2>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">bcdedit</code>: A command-line tool to manage Boot Configuration Data (BCD).</li>
-  <li><code class="language-plaintext highlighter-rouge">/set {default}</code>: Modifies the default boot entry.</li>
-  <li><code class="language-plaintext highlighter-rouge">bootstatuspolicy ignoreallfailures</code>: Tells the system  <strong>not to launch recovery options</strong>, even after critical failures (e.g., blue screens).</li>
-</ul>
-
-<p>wbadmin DELETE SYSTEMSTATEBACKUP <br />
-wbadmin DELETE SYSTEMSTATEBACKUP -deleteOldest</p>
-
-<h2 id="explanation-4">Explanation:</h2>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">**wbadmin**</code>: A native Windows command-line utility for managing backup and recovery.</li>
-  <li><code class="language-plaintext highlighter-rouge">**DELETE SYSTEMSTATEBACKUP**</code>: Deletes all  <strong>System State backups</strong>, which include critical files for system recovery (e.g., registry, boot files, Active Directory for domain controllers).</li>
-  <li>Deletes  <strong>only the oldest System State backup</strong>.</li>
-  <li>Used either to clear disk space or, in the case of malware, to  <strong>incrementally remove recovery points</strong>.</li>
-</ul>
-
-<p>net stop BackupExecAgentAccelerator /y <br />
-net stop BackupExecVSSProvider /y</p>
-
-<h2 id="explanation-5">Explanation:</h2>
-
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">**net stop**</code>: A Windows command used to stop running services.</li>
-  <li><code class="language-plaintext highlighter-rouge">**BackupExecAgentAccelerator**</code>: A service used by  <strong>Veritas Backup Exec</strong>  to speed up backup operations.</li>
-  <li><code class="language-plaintext highlighter-rouge">**BackupExecVSSProvider**</code>: A Veritas component that integrates with the  <strong>Volume Shadow Copy Service (VSS)</strong>  to manage backup snapshots.</li>
-</ul>
-
-<p>The  <code class="language-plaintext highlighter-rouge">/y</code>  flag  <strong>automatically confirms dependent service stops</strong>  without prompting.</p>
-
-
-  
-    
-      <div class="post-tags-section">
-  <i class="post-tags-icon fas fa-tags"></i>
-  <ul class="post-tags"><li>
-        <a class="post-tag" href="/tags/#shadowcopy">shadowcopy</a></li><li>
-        <a class="post-tag" href="/tags/#vss">vss</a></li></ul>
-</div>
-
-  
-
-  
-</article>
-
-
-<aside class="related">
-  <h2>Related posts</h2>
-  <ul class="related-posts">
-    
-      <li>
-        <a href="/malware%20analysis/2025/07/21/cve-2025-53770-viewstate-rce/">
-          CVE-2025-53770 Remote Code Execution via ViewState Abuse
-          <small><time datetime="2025-07-21T00:00:00+03:00">21 Jul 2025</time></small>
-        </a>
-      </li>
-    
-      <li>
-        <a href="/threat%20intelligence/ransomware/incident%20response/2025/07/18/operational-analysis-of-ransomware-attack-lifecycle/">
-          Operational Analysis of Ransomware Attack Lifecycle
-          <small><time datetime="2025-07-18T00:00:00+03:00">18 Jul 2025</time></small>
-        </a>
-      </li>
-    
-      <li>
-        <a href="/threat%20intelligence/crypto%20crime/incident%20response/2025/07/18/nobitex-breach-81-million-theft-under-investigation/">
-          Nobitex Breach: $81 Million Theft Under Investigation
-          <small><time datetime="2025-07-18T00:00:00+03:00">18 Jul 2025</time></small>
-        </a>
-      </li>
-    
-  </ul>
-</aside>
-
-
-</main>
-
-<footer class="footer"><small>
-    &copy; 2025 <a href="https://github.com/kh4lifa0x/">Ahmed Khalifa</a>. All rights reserved.
-    Powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://github.com/vszhub/not-pure-poole">Not Pure Poole</a>.
-  </small>
-</footer>
-</div>
-      <div class="sidebar-right pure-u-1 pure-u-md-1-4">
-</div>
-    </div>
-
-    <script async src="https://use.fontawesome.com/releases/v5.0.12/js/all.js"></script><script>
-  function strip(str, remove) {
-    while (str.length > 0 && remove.indexOf(str.charAt(0)) != -1) {
-      str = str.substr(1);
+  <script async src="https://use.fontawesome.com/releases/v5.0.12/js/all.js"></script>
+  <script>
+    function strip(str, remove) {
+      while (str.length > 0 && remove.indexOf(str.charAt(0)) != -1) {
+        str = str.substr(1);
+      }
+      while (str.length > 0 && remove.indexOf(str.charAt(str.length - 1)) != -1) {
+        str = str.substr(0, str.length - 1);
+      }
+      return str;
     }
-    while (str.length > 0 && remove.indexOf(str.charAt(str.length - 1)) != -1) {
-      str = str.substr(0, str.length - 1);
-    }
-    return str;
-  }
 
-  function scroll() {
-    console.log('scroll');
-    window.scrollTo({
-      left: 0, 
-      top: window.innerHeight,
-      behavior: 'smooth'
-    });
-    sessionStorage.removeItem('forceCheckScroll');
-  }
-
-  const forceCheckScroll = sessionStorage.getItem('forceCheckScroll') === 'true';
-  const checkScroll = strip(window.location.pathname, '/') !== strip('', '/');
-
-  if (forceCheckScroll || checkScroll) {
-    const maxWidth = "(max-width: 48rem)";
-    const result = window.matchMedia(maxWidth);
-    if (result.matches) {
-      scroll();
-    } else {
-      result.addListener((match) => {
-        if (match.media == maxWidth) {
-          if (match.matches) {
-            scroll();
-          }
-        }
+    function scroll() {
+      console.log('scroll');
+      window.scrollTo({
+        left: 0,
+        top: window.innerHeight,
+        behavior: 'smooth'
       });
+      sessionStorage.removeItem('forceCheckScroll');
     }
-  }
-</script>
+
+    const forceCheckScroll = sessionStorage.getItem('forceCheckScroll') === 'true';
+    const checkScroll = strip(window.location.pathname, '/') !== strip('', '/');
+
+    if (forceCheckScroll || checkScroll) {
+      const maxWidth = "(max-width: 48rem)";
+      const result = window.matchMedia(maxWidth);
+      if (result.matches) {
+        scroll();
+      } else {
+        result.addListener((match) => {
+          if (match.media == maxWidth) {
+            if (match.matches) {
+              scroll();
+            }
+          }
+        });
+      }
+    }
+  </script>
 </body>
+
 </html>
