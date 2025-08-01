@@ -1,0 +1,334 @@
+// Minimal Mistakes exact theme replication
+
+// Post blog card styling - EXACT match
+.post-blog-card {
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid var(--card-border);
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+  
+  .post-card-header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .post-card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0 0 0.5rem 0;
+    
+    a {
+      color: var(--heading-color);
+      text-decoration: none;
+      
+      &:hover {
+        color: var(--primary);
+      }
+    }
+  }
+  
+  .post-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: var(--meta-color);
+    margin-bottom: 0.75rem;
+    
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+  }
+  
+  .post-card-excerpt {
+    color: var(--body-color);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+  }
+  
+  .post-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    
+    .tag {
+      background: var(--tag-bg);
+      color: var(--tag-color);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: opacity 0.2s ease;
+      
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+}
+
+// Override post-entry to use card style
+.post-entry {
+  @extend .post-blog-card;
+  border-bottom: none;
+  
+  .post-title {
+    @extend .post-card-title;
+  }
+  
+  .post-meta {
+    @extend .post-card-meta;
+  }
+}
+
+// Main layout adjustments
+body {
+  background-color: var(--body-bg);
+  font-family: var(--body-font);
+  font-size: var(--body-font-size);
+  line-height: var(--body-line-height);
+  color: var(--body-color);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+.content {
+  background: transparent;
+  padding: 2rem;
+  
+  @media (max-width: $md-width) {
+    padding: 1rem;
+  }
+}
+
+// Sidebar styling - Minimal Mistakes style
+.sidebar-left {
+  background: var(--card-bg) !important;
+  
+  .masthead {
+    text-align: center;
+    
+    @media (min-width: $md-width) {
+      text-align: left;
+    }
+    
+    .avatar-image {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 1rem;
+      border-radius: 50%;
+      
+      @media (min-width: $md-width) {
+        margin: 0 0 1rem 0;
+      }
+    }
+    
+    .masthead-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.25rem;
+      
+      a {
+        color: var(--heading-color) !important;
+        
+        &:hover {
+          color: var(--primary) !important;
+        }
+      }
+    }
+    
+    .masthead-tagline {
+      font-size: 0.875rem;
+      color: var(--meta-color);
+      line-height: 1.5;
+    }
+  }
+  
+  .navigation-list {
+    margin-top: 2rem;
+    
+    .navigation-item {
+      margin-bottom: 0.5rem;
+      
+      a {
+        color: var(--body-color) !important;
+        font-size: 0.875rem;
+        padding: 0.5rem 0;
+        display: block;
+        border-left: 3px solid transparent;
+        padding-left: 1rem;
+        margin-left: -1rem;
+        
+        &:hover {
+          color: var(--primary) !important;
+          border-left-color: var(--primary);
+          background: var(--gray-100);
+        }
+        
+        &.active {
+          color: var(--primary) !important;
+          border-left-color: var(--primary);
+          font-weight: 600;
+        }
+      }
+    }
+  }
+  
+  .social {
+    margin-top: 2rem;
+    text-align: center;
+    
+    @media (min-width: $md-width) {
+      text-align: left;
+    }
+    
+    .social-icon {
+      color: var(--meta-color) !important;
+      font-size: 1.25rem;
+      
+      &:hover {
+        color: var(--primary) !important;
+      }
+    }
+  }
+}
+
+// Typography improvements
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--heading-font);
+  font-weight: 700;
+  color: var(--heading-color);
+}
+
+// Code styling
+code {
+  background: var(--code-bg);
+  color: var(--code-color);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: var(--code-font);
+}
+
+pre {
+  background: var(--code-bg);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  overflow-x: auto;
+  
+  code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+}
+
+// Archive page styling
+.archive-list {
+  list-style: none;
+  padding: 0;
+  
+  .archive-item {
+    @extend .post-blog-card;
+  }
+}
+
+// Pagination styling
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 3rem;
+  
+  a, span {
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  
+  a {
+    background: var(--card-bg);
+    color: var(--body-color);
+    border: 1px solid var(--border-color);
+    
+    &:hover {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+  }
+  
+  .current {
+    background: var(--primary);
+    color: white;
+  }
+}
+
+// Home header styling
+.home-header {
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  
+  .home-header-bar {
+    padding: 1rem 0;
+  }
+  
+  .home-header-menu {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    
+    .pure-menu-link {
+      color: var(--body-color);
+      font-weight: 500;
+      position: relative;
+      padding-bottom: 0.5rem;
+      
+      &:hover {
+        color: var(--primary);
+      }
+      
+      &.current-item {
+        color: var(--primary);
+        
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -1px;
+          left: 0;
+          right: 0;
+          height: 2px;
+          background: var(--primary);
+        }
+      }
+    }
+  }
+}
+
+// Dark mode specific
+@media (prefers-color-scheme: dark) {
+  .sidebar-left {
+    .navigation-item a:hover {
+      background: var(--gray-800);
+    }
+  }
+}

@@ -3,19 +3,12 @@
 // Each post is wrapped in `.post` and is used on default and post layouts. Each
 // page is wrapped in `.page` and is only used on the page layout.
 
-.post-entry {
-  border-bottom: 1px solid var(--border-color);
-  margin-bottom: var(--spacer-3);
-}
+// Post entry styling is now handled in _custom.scss
 
 .page,
 .post {
-  font-family: var(--text-font);
-  margin-bottom: 4em;
-
-  h1, h2, h3, h4, h5, h6, .post-meta {
-    font-family: var(--body-font);
-  }
+  font-family: var(--body-font);
+  margin-bottom: 3em;
 
   li + li {
     margin-top: .25rem;
@@ -34,10 +27,11 @@
 .post-title a {
   color: inherit;
   text-decoration: none;
+  transition: color 0.2s ease;
 
   &:hover,
   &:focus {
-    text-decoration: underline;
+    color: var(--gray-600);
   }
 }
 
@@ -46,7 +40,8 @@
   display: block;
   margin-top: -.5rem;
   margin-bottom: var(--spacer);
-  color: var(--gray-600);
+  color: var(--gray-500);
+  font-size: 0.9rem;
 }
 
 .comment-count {
@@ -121,8 +116,4 @@
   }
 }
 
-.post-tag {
-  padding: .1em .5em;
-  border: 1px solid var(--border-color);
-  border-radius: .5em;
-}
+// Post tag styling is now handled in _custom.scss

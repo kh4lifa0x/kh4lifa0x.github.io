@@ -3,29 +3,34 @@
 // Styles for managing the structural hierarchy of the site.
 
 .container {
-  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   margin: 0;
+  padding: 0;
 }
 
 .home-header {
-  margin-top: -1em;
-  margin-bottom: var(--spacer-3);
+  width: 100%;
+  margin-bottom: var(--spacer-2);
 }
 
 .content {
-  padding-top: var(--spacer-2);
-  padding-left: var(--spacer-2);
-  padding-right: var(--spacer-2);
-  margin-left:  auto;
-  margin-right: auto;
+  flex: 1;
+  padding: var(--spacer-2);
   min-height: 100vh;
+  width: 100%;
 }
 
 .sidebar-left {
-  display: flex;
-  padding: var(--spacer);
-  background: center / cover;
-  height: 100vh;
+  width: 100%;
+  padding: var(--spacer-2);
+  background: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-right {
+  display: none;
 }
 
 footer {
@@ -33,45 +38,42 @@ footer {
   margin-bottom: var(--spacer-3);
 }
 
+// Desktop layout
 @media (min-width: $md-width) {
-  .content {
-    padding-top: var(--spacer-3);
-    padding-left: var(--spacer-3);
-    padding-right: var(--spacer-3);
-    margin-left: 25%;
+  .container {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 0;
+    align-items: start;
   }
-
+  
   .sidebar-left {
-    position: fixed;
+    position: sticky;
     top: 0;
-    bottom: 0;
+    height: 100vh;
+    overflow-y: auto;
+    border-bottom: none;
+    border-right: 1px solid var(--border-color);
   }
-
-  .home-header {
-    margin-top: -2em;
-  }
-}
-
-@media (min-width: $lg-width) {
-  .sidebar-right {
-    display: block;
-  }
-}
-
-@media (max-width: $lg-width) {
-  .sidebar-right {
-    display: none;
-  }
-}
-
-@media (max-width: $md-width) {
+  
   .content {
+    grid-column: 2;
+    padding: var(--spacer-3);
     width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .home-header {
+    grid-column: 2;
+    margin-top: 0;
   }
 }
 
-@media (min-width: $md-width) and (max-width: $lg-width) {
-  .content {
-    width: 75%;
+// Hide Pure CSS responsive grid classes on desktop
+@media (min-width: $md-width) {
+  .pure-u-md-1-4,
+  .pure-u-md-1-2 {
+    width: auto !important;
   }
 }
