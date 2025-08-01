@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en"><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="http://0.0.0.0:4000/feed.xml" rel="self" type="application/atom+xml" /><link href="http://0.0.0.0:4000/" rel="alternate" type="text/html" hreflang="en" /><updated>2025-08-01T18:43:43+03:00</updated><id>http://0.0.0.0:4000/feed.xml</id><title type="html">Ahmed Khalifa</title><subtitle>Threat Researcher &amp; DFIR Engineer interested in Adversary Hunting and malware Research</subtitle><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><entry><title type="html">CVE-2025-53770 Remote Code Execution via ViewState Abuse</title><link href="http://0.0.0.0:4000/malware%20analysis/2025/07/21/cve-2025-53770-viewstate-rce/" rel="alternate" type="text/html" title="CVE-2025-53770 Remote Code Execution via ViewState Abuse" /><published>2025-07-21T00:00:00+03:00</published><updated>2025-07-21T00:00:00+03:00</updated><id>http://0.0.0.0:4000/malware%20analysis/2025/07/21/cve-2025-53770-viewstate-rce</id><content type="html" xml:base="http://0.0.0.0:4000/malware%20analysis/2025/07/21/cve-2025-53770-viewstate-rce/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/critical-sharepoint-vulnerability-cve-2025-53770-remote-code-execution-via-viewstate-abuse" />
+  </head>
+  <body>
+    <p>You are being redirected to the full analysis on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/critical-sharepoint-vulnerability-cve-2025-53770-remote-code-execution-via-viewstate-abuse" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/critical-sharepoint-vulnerability-cve-2025-53770-remote-code-execution-via-viewstate-abuse
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Malware Analysis" /><summary type="html"><![CDATA[Deep technical analysis of CVE-2025-53770 – a critical RCE in Microsoft SharePoint exploiting __VIEWSTATE deserialization — Published on the DarkAtlas blog.]]></summary></entry><entry><title type="html">Akira Ransomware: Road to Glory</title><link href="http://0.0.0.0:4000/threat%20intelligence/ransomware/adversary%20tracking/2025/07/18/akira-ransomware-road-to-glory/" rel="alternate" type="text/html" title="Akira Ransomware: Road to Glory" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/ransomware/adversary%20tracking/2025/07/18/akira-ransomware-road-to-glory</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/ransomware/adversary%20tracking/2025/07/18/akira-ransomware-road-to-glory/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/akira-ransomware-road-to-glory" />
+  </head>
+  <body>
+    <p>You are being redirected to the full article on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/akira-ransomware-road-to-glory" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/akira-ransomware-road-to-glory
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Ransomware" /><category term="Adversary Tracking" /><summary type="html"><![CDATA[A detailed analysis of Akira ransomware’s rise — tactics, infrastructure, and operational trends. Published on the DarkAtlas blog.]]></summary></entry><entry><title type="html">BlackLock Ransomware: A Growing Threat Across Industries</title><link href="http://0.0.0.0:4000/threat%20intelligence/ransomware/industry%20targeting/2025/07/18/blacklock-ransomware-a-growing-threat-across-industries/" rel="alternate" type="text/html" title="BlackLock Ransomware: A Growing Threat Across Industries" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/ransomware/industry%20targeting/2025/07/18/blacklock-ransomware-a-growing-threat-across-industries</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/ransomware/industry%20targeting/2025/07/18/blacklock-ransomware-a-growing-threat-across-industries/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/blacklock-ransomware-a-growing-threat-across-industries" />
+  </head>
+  <body>
+    <p>You are being redirected to the full article on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/blacklock-ransomware-a-growing-threat-across-industries" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/blacklock-ransomware-a-growing-threat-across-industries
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Ransomware" /><category term="Industry Targeting" /><summary type="html"><![CDATA[An intelligence report on the emergence and impact of BlackLock ransomware across multiple sectors — tactics, targets, and threat trajectory. Published on DarkAtlas.]]></summary></entry><entry><title type="html">BlueNoroff (APT38): Live Infrastructure Hunting</title><link href="http://0.0.0.0:4000/threat%20intelligence/apt%20tracking/2025/07/18/bluenoroff-apt38-live-infrastructure-hunting/" rel="alternate" type="text/html" title="BlueNoroff (APT38): Live Infrastructure Hunting" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/apt%20tracking/2025/07/18/bluenoroff-apt38-live-infrastructure-hunting</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/apt%20tracking/2025/07/18/bluenoroff-apt38-live-infrastructure-hunting/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/bluenoroff-apt38-live-infrastructure-hunting" />
+  </head>
+  <body>
+    <p>You are being redirected to the full report on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/bluenoroff-apt38-live-infrastructure-hunting" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/bluenoroff-apt38-live-infrastructure-hunting
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="APT Tracking" /><summary type="html"><![CDATA[Tracking the live infrastructure of BlueNoroff (APT38) — Techniques, TTPs, and discovery process explained in this DarkAtlas blog post.]]></summary></entry><entry><title type="html">ClickFix Chaos: A Deep Dive into Rhadamanthys Infostealer’s Stealth and Steal Tactics</title><link href="http://0.0.0.0:4000/threat%20intelligence/malware%20analysis/2025/07/18/clickfix-chaos-deep-dive-into-rhadamanthys-infostealer/" rel="alternate" type="text/html" title="ClickFix Chaos: A Deep Dive into Rhadamanthys Infostealer’s Stealth and Steal Tactics" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/malware%20analysis/2025/07/18/clickfix-chaos-deep-dive-into-rhadamanthys-infostealer</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/malware%20analysis/2025/07/18/clickfix-chaos-deep-dive-into-rhadamanthys-infostealer/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/clickfix-chaos-a-deep-dive-into-rhadamanthys-infostealers-stealth-and-steal-tactics" />
+  </head>
+  <body>
+    <p>You are being redirected to the full analysis on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/clickfix-chaos-a-deep-dive-into-rhadamanthys-infostealers-stealth-and-steal-tactics" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/clickfix-chaos-a-deep-dive-into-rhadamanthys-infostealers-stealth-and-steal-tactics
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Malware Analysis" /><summary type="html"><![CDATA[In-depth analysis of Rhadamanthys Infostealer’s techniques and evasive behaviors — Published on the DarkAtlas blog.]]></summary></entry><entry><title type="html">Delivering Trojans via ClickFix CAPTCHA</title><link href="http://0.0.0.0:4000/threat%20intelligence/malware%20delivery/social%20engineering/2025/07/18/delivering-trojans-via-clickfix-captcha/" rel="alternate" type="text/html" title="Delivering Trojans via ClickFix CAPTCHA" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/malware%20delivery/social%20engineering/2025/07/18/delivering-trojans-via-clickfix-captcha</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/malware%20delivery/social%20engineering/2025/07/18/delivering-trojans-via-clickfix-captcha/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/delivering-trojans-via-clickfix-captcha" />
+  </head>
+  <body>
+    <p>You are being redirected to the full article on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/delivering-trojans-via-clickfix-captcha" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/delivering-trojans-via-clickfix-captcha
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Malware Delivery" /><category term="Social Engineering" /><summary type="html"><![CDATA[A breakdown of how attackers are abusing ClickFix CAPTCHA forms to deliver trojans — tactics, payloads, and distribution trends. Published on DarkAtlas.]]></summary></entry><entry><title type="html">Discord Invite Hijacking: How Fake Links Are Delivering Infostealers</title><link href="http://0.0.0.0:4000/threat%20intelligence/malware%20delivery/social%20engineering/2025/07/18/discord-invite-hijacking-fake-links-delivering-infostealers/" rel="alternate" type="text/html" title="Discord Invite Hijacking: How Fake Links Are Delivering Infostealers" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/malware%20delivery/social%20engineering/2025/07/18/discord-invite-hijacking-fake-links-delivering-infostealers</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/malware%20delivery/social%20engineering/2025/07/18/discord-invite-hijacking-fake-links-delivering-infostealers/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/discord-invite-hijacking-how-fake-links-are-delivering-infostealers" />
+  </head>
+  <body>
+    <p>You are being redirected to the full article on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/discord-invite-hijacking-how-fake-links-are-delivering-infostealers" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/discord-invite-hijacking-how-fake-links-are-delivering-infostealers
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Malware Delivery" /><category term="Social Engineering" /><summary type="html"><![CDATA[Exploring the rise of Discord invite hijacking campaigns delivering infostealers through fake links — published on the DarkAtlas blog.]]></summary></entry><entry><title type="html">DragonForce Ransomware: From Hacktivism to Global Cyber Extortion</title><link href="http://0.0.0.0:4000/threat%20intelligence/ransomware/2025/07/18/dragonforce-ransomware-from-hacktivism-to-global-cyber-extortion/" rel="alternate" type="text/html" title="DragonForce Ransomware: From Hacktivism to Global Cyber Extortion" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/ransomware/2025/07/18/dragonforce-ransomware-from-hacktivism-to-global-cyber-extortion</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/ransomware/2025/07/18/dragonforce-ransomware-from-hacktivism-to-global-cyber-extortion/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/dragonforce-ransomware-from-hacktivism-to-global-cyber-extortion" />
+  </head>
+  <body>
+    <p>You are being redirected to the full article on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/dragonforce-ransomware-from-hacktivism-to-global-cyber-extortion" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/dragonforce-ransomware-from-hacktivism-to-global-cyber-extortion
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Ransomware" /><summary type="html"><![CDATA[A deep investigation into DragonForce ransomware’s evolution from hacktivist roots to a global extortion operation — published on DarkAtlas.]]></summary></entry><entry><title type="html">Info Stealers 101: Everything You Should Know</title><link href="http://0.0.0.0:4000/threat%20intelligence/malware%20analysis/2025/07/18/info-stealers-101-everything-you-should-know/" rel="alternate" type="text/html" title="Info Stealers 101: Everything You Should Know" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/malware%20analysis/2025/07/18/info-stealers-101-everything-you-should-know</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/malware%20analysis/2025/07/18/info-stealers-101-everything-you-should-know/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/info-stealers-101-everything-you-should-know" />
+  </head>
+  <body>
+    <p>You are being redirected to the full article on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/info-stealers-101-everything-you-should-know" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/info-stealers-101-everything-you-should-know
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Malware Analysis" /><summary type="html"><![CDATA[A complete guide to Info Stealers — threats, techniques, and protections. Published on the DarkAtlas blog.]]></summary></entry><entry><title type="html">LockBit Ransomware: From Cybercriminal Glory to a Critical OPSEC Failure</title><link href="http://0.0.0.0:4000/threat%20intelligence/ransomware/opsec%20failures/cybercrime/2025/07/18/lockbit-ransomware-from-cybercriminal-glory-to-a-critical-opsec-failure/" rel="alternate" type="text/html" title="LockBit Ransomware: From Cybercriminal Glory to a Critical OPSEC Failure" /><published>2025-07-18T00:00:00+03:00</published><updated>2025-07-18T00:00:00+03:00</updated><id>http://0.0.0.0:4000/threat%20intelligence/ransomware/opsec%20failures/cybercrime/2025/07/18/lockbit-ransomware-from-cybercriminal-glory-to-a-critical-opsec-failure</id><content type="html" xml:base="http://0.0.0.0:4000/threat%20intelligence/ransomware/opsec%20failures/cybercrime/2025/07/18/lockbit-ransomware-from-cybercriminal-glory-to-a-critical-opsec-failure/"><![CDATA[<html>
+  <head>
+    <meta http-equiv="refresh" content="3; url=https://darkatlas.io/blog/lockbit-ransomware-from-cybercriminal-glory-to-a-critical-opsec-failure" />
+  </head>
+  <body>
+    <p>You are being redirected to the full article on the DarkAtlas Blog. If you are not redirected automatically, click the link:
+      <a href="https://darkatlas.io/blog/lockbit-ransomware-from-cybercriminal-glory-to-a-critical-opsec-failure" target="_blank" rel="noopener noreferrer">
+        https://darkatlas.io/blog/lockbit-ransomware-from-cybercriminal-glory-to-a-critical-opsec-failure
+      </a>
+    </p>
+  </body>
+</html>]]></content><author><name>Ahmed Khalifa</name><email>ahmedkhalifa8474hh@gmail.com</email></author><category term="Threat Intelligence" /><category term="Ransomware" /><category term="OPSEC Failures" /><category term="Cybercrime" /><summary type="html"><![CDATA[A full investigation into LockBit's operational downfall — from ruling the ransomware world to a severe OPSEC breach. Published on DarkAtlas.]]></summary></entry></feed>
