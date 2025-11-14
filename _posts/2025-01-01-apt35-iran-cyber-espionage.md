@@ -1,4 +1,5 @@
 ---
+layout: post
 title: "Threat Profile: APT35 (Charming Kitten)"
 description: "In-depth threat profile of APT35 — Iran’s state-sponsored cyber-espionage group."
 date: 2025-10-17
