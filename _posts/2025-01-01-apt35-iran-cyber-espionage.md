@@ -29,7 +29,56 @@ Its operations blend  **espionage with influence operations**, often targeting  
 
 **Known Aliases**
 
--   APT35 | Ballistic Bobcat | Charming Kitten | CharmingCypress | Cobalt Illusion | COBALT MIRAGE | Educated Manticore | G0059 | Magic Hound | Mint Sandstorm | Newscaster Team | Phosphorus | TA453 | TEMP.Beanie | Tarh Andishan | Timberworm | TunnelVision | UNC788 | Yellow Garuda
+Known Aliases
+APT35 operates under a wide array of aliases assigned by various threat intelligence vendors and researchers, reflecting its diverse campaign history and attribution:
+
+APT35
+
+Ballistic Bobcat
+
+Charming Kitten
+
+CharmingCypress
+
+Cobalt Illusion
+
+COBALT MIRAGE
+
+Educated Manticore
+
+G0059
+
+Magic Hound
+
+Mint Sandstorm
+
+Newscaster Team
+
+Phosphorus
+
+TA453
+
+TEMP.Beanie
+
+Tarh Andishan
+
+Timberworm
+
+TunnelVision
+
+UNC788
+
+Yellow Garuda
+
+ITG18
+
+Ajax Security Team
+
+NemesisKitten
+
+Tortoiseshell (sometimes as TA453)
+
+ImperialKitten
 
 **Notable Campaigns**  attributed to APT35 include:
 
