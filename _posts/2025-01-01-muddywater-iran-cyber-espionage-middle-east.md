@@ -139,3 +139,110 @@ example string:
 e=Access&y=Guest&[h=instance-sy9at2-relay.screenconnect.com](http://h=instance-sy9at2-relay.screenconnect.com/)&p=443&c=mfa&[c=mfa.gov](http://c=mfa.gov/)&c=mfa&c=pc
 
 The attacker opens **[instance-sy9at2-relay.screenconnect.com](http://instance-sy9at2-relay.screenconnect.com/)** and is able to remotely control the victim computer, execute various commands and install tools, among a range of other actions.
+
+install tools, among a range of other actions.
+
+![](https://cdn-images-1.medium.com/max/1000/1*GNEkufKMaJCL514I-vJmUg.png)
+
+---
+
+MuddyWater’s use of remote access tools extends beyond **ScreenConnect** to include Remote Utilities under a similar attack methodology. The group delivers Remote Utilities in phishing campaigns using **PDF** files as decoys, contrasting with their ScreenConnect campaigns where the phishing lures are embedded in **DOC** documents.
+
+In this Remote Utilities campaign, the phishing email contains a PDF decoy designed to entice the target to download a ZIP archive. This archive carries the Remote Utilities installation package, which, once run, installs the remote access tool on the victim’s system, enabling the attacker to stealthily control the compromised machine.
+
+![](https://cdn-images-1.medium.com/max/1000/0*dMCX-LpjOCxiwstk)
+
+---
+
+The file **RutServ.exe** used by MuddyWater functions as part of their remote access tool deployment. When executed, **RutServ.exe** generates a unique identifier known as an Internet-ID and sends this information to the attacker’s mailbox. This Internet-ID acts as a key for the attacker to remotely connect back to the infected host.
+
+![](https://cdn-images-1.medium.com/max/1000/0*egnx-_ieq3CmY6BE)
+
+---
+
+### N-Able
+
+**Starting in October 2023**, the MuddyWater group shifted to using **N-Able’s** Advanced Monitoring Agent in their cyber-espionage campaigns. This new tactic continued to rely on **spear-phishing** emails to trick victims into downloading malicious samples, but with notable changes in payload hosting and delivery techniques.
+
+Instead of commonly used file-sharing platforms like **OneHub**, MuddyWater began hosting their malicious payloads on **Storyblok**, a legitimate file-sharing website. The downloaded payloads no longer consisted of direct MSI installation packages. Instead, the infection chain involved a hidden directory structure orchestrated by a malicious **LNK** (shortcut) file.
+
+You can read our fully detailed blog about [**.LNK**](https://darkatlas.io/blog/how-shortcut-files-lnk-used-to-deliver-ransomware) Files.
+
+When a victim interacts with the phishing material, they are induced to open a ZIP archive containing this multi-layered setup. Inside, they find hidden folders and files, including the deceptive LNK file named Attachments.lnk. This LNK file triggers the execution of Diagnostic.exe, which then launches the legitimate Windows.Diagnostic.Document.EXE located in a hidden subfolder. This executable is a signed installer for the N-Able Advanced Monitoring Agent.
+
+![](https://cdn-images-1.medium.com/max/1000/0*5hxHpy37qOJXLT5F)
+
+---
+
+The Diagnostic.exe file in **MuddyWater’s** campaign serves a dual purpose: it simultaneously opens the decoy document and executes the **N-Able** RMM installer hidden within the delivery package. This clever tactic maintains the illusion of legitimacy, as the victim sees a **genuine-looking** official memo from the Israeli Civil Service Commission (**ICSC**) discussing procedures related to government employees’ social media activities.
+
+![](https://cdn-images-1.medium.com/max/1000/1*16XYzJeW53iQitvzRHYP9Q.png)
+
+---
+
+![](https://cdn-images-1.medium.com/max/1000/0*ak8a700CB3B_E7Qf)
+
+---
+
+---
+
+The **N-Able** client program used by **MuddyWater** is a legitimate remote monitoring and management (RMM) tool that attackers configure through their server’s control panel to generate customized Agent installers. Once the victim runs the N-Able client and it installs on their system, the Agent actively connects back to the attacker-controlled N-Able management console.
+
+**N-Able’s** legal functionalities encompass a wide array of **IT management** tasks, including:
+
+- Remote system monitoring and health checks
+- Backup management
+- Security oversight
+- Network management and troubleshooting
+
+![](https://cdn-images-1.medium.com/max/1000/0*snGsU3m6iPjsEJ-_)
+
+---
+
+### Syncro
+
+MuddyWater began using the **Syncro** remote administration tool as early as **September 2022**. This marked an evolution in their attack methods, diversifying the remote management tools they abuse. Their campaigns involve spear-phishing emails with attachments in various formats, including PDF, Office documents, and notably HTML files.
+
+The use of HTML files as phishing payloads stands out because these files often bypass email security products more easily than executables or archives. HTML attachments are typically overlooked in phishing awareness training and do not raise immediate suspicion among recipients, increasing the chances of successful compromise.
+
+![](https://cdn-images-1.medium.com/max/1000/0*2zG22QYkhlUZtK8u)
+
+Two phishing messages linked to MuddyWater carried a malicious link and an HTML attachment. The HTML page was crafted to mimic an internal file hosting site for **egyptianabrasives[.]com**, luring victims to click a download button. The download link embedded in this page was:
+
+[“https[:]//1drv.ms/u/s!Ah4-vpXOyPCGdd1DkLHmbL2qXQU?e=](https://1drv.ms/u/s!Ah4-vpXOyPCGdd1DkLHmbL2qXQU?e=RkaudW)xxxxx”
+
+This link directs users to a file hosted on Microsoft OneDrive, a legitimate cloud storage service, which helps evade security detections. This setup is part of MuddyWater’s strategy to carefully disguise their payload delivery by spoofing trusted internal resources and leveraging reputable hosting platforms, increasing the likelihood that targeted individuals will trust the content and engage with the download.
+
+![](https://cdn-images-1.medium.com/max/1000/0*dj3y2lWCFs1sbc28)
+
+---
+
+From these two URLs —
+
+- The malicious link in the message body:  
+    `https://www.dropbox[.]com/s/scj6n0l58yyb3f1/Purchase%20Order%20for%20Supplies--no12305570.zip?dl=0`
+- The download link in the HTML attachment:  
+    `https://1drv.ms/u/s!Ah4-vpXOyPCGdd1DkLHmbL2qXQU?e=RkaudW`
+
+— it is evident that the attackers use public, legitimate file hosting services like Dropbox and Microsoft **OneDrive** for payload delivery. This tactic reduces the likelihood of interception or blocking by security software since traffic to these trusted domains is usually allowed and less scrutinized.
+
+The payload downloaded from these hosted archives is an installer of Syncro, a legitimate remote monitoring and management (RMM) tool. The Syncro installer carries a digital signature and is not inherently malicious by itself. However, embedded in its configuration information within the MSI file are critical identifiers like **API_KEY** and **CUSTOMER_ID**, which tie the installed agent to the **attacker’s controlled** management server.
+
+![](https://cdn-images-1.medium.com/max/1000/0*x8xrPawdIbnlzLEt)
+
+![](https://cdn-images-1.medium.com/max/1000/1*repWpjENqDSoiL2JTWJcPA.png)
+
+---
+
+
+Conclusion
+
+MuddyWater is a highly persistent Iranian state-sponsored cyber espionage group aligned with the Ministry of Intelligence and Security (MOIS), active since at least 2017. The group uses a sophisticated blend of social engineering, legitimate remote administration tools, and custom malware to breach and maintain long-term access to targeted networks—primarily across the Middle East but also globally.
+
+Their campaigns rely heavily on spear-phishing from compromised email accounts, deploying malware such as PowGoop, Small Sieve, Canopy, Mori, POWERSTATS, and their custom BugSleep backdoor. They frequently abuse commercial Remote Monitoring and Management (RMM) software like Atera Agent, ScreenConnect, Remote Utilities, N-Able, and Syncro to obfuscate their activities and evade detection.
+
+MuddyWater targets key sectors including government agencies, municipalities, airlines, travel industries, and journalists. Their operational sophistication includes exploiting known vulnerabilities in public-facing applications and remote services, using obfuscated PowerShell and scripting tools, DLL side-loading, and leveraging encrypted, encoded command and control channels.
+
+Organizations are advised to enhance defenses by monitoring for indicators of compromise tied to this threat actor, applying relevant patches promptly, training personnel on phishing awareness, and scrutinizing the use of legitimate RMM platforms within their networks.
+
+MuddyWater’s evolving arsenal and adapting tactics make it a persistent threat requiring continued vigilance and proactive cybersecurity measures.
