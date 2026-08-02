@@ -4,6 +4,7 @@ description: Threat Researcher & DFIR Engineer interested in Adversary Hunting a
 url: https://kh4lifa0x.github.io
 avatar: /avatar.jpeg
 paginate: 5
+paginate_path: /blogs/page:num
 permalink: pretty
 cover_image: /bg.jpeg
 
